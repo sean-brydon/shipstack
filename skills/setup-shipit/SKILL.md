@@ -76,6 +76,17 @@ Tell the user the file was written, show the final table, and say that skills re
 
 Then mention permissions once. Long runs (autonomous run, `/loop`) work best in Claude Code's auto permission mode, or with an allowlist so routine commands don't stop the run. The `fewer-permission-prompts` skill builds one from the user's own transcripts. Irreversible actions (force-push to shared branches, deploys, data deletion, messages to customers, publishing) still pause for the human in any mode.
 
-### 7. Offer a verification skill (optional)
+### 7. Name your repos for auto mode
+
+Auto mode judges pushes and PRs against the `autoMode.environment` lines in `~/.claude/settings.json`. Those lines are often generated from whatever folder Claude Code first ran in, and then say there is no trusted repo, so routine pushes get refused. Fix them here.
+
+1. Run `python3 -I ~/.claude/skills/setup-shipit/scripts/automode_repos.py scan`. It lists the GitHub owners found in the user's local checkouts, marking the user's own account and the orgs they belong to.
+2. Ask with AskUserQuestion (`multiSelect: true`), which owners auto mode should treat as the user's own source control. Offer up to four owners: the user's account first, then the orgs with the most checkouts. Put the rest in the question text so the user can name them under Other. Don't preselect an employer's org: say what trusting it means (agents push branches and open PRs there without extra friction) and let the user choose.
+3. Run the same script with `apply --owners <a,b> --dry-run` and show the user the old and new lines it prints. It rewrites only five lines (Organization, Repository visibility, Default / protected branches, Source control, Trusted repo) and leaves every other line and setting alone.
+4. On the user's go, run it without `--dry-run`. It keeps a timestamped backup next to `settings.json`. Then run `claude auto-mode config` and confirm the new Source control line shows up. Changes apply to new sessions.
+
+Skip this step when the user declines, or when `settings.json` has no `autoMode` section and the user doesn't want one. Never edit `settings.json` without the user's go.
+
+### 8. Offer a verification skill (optional)
 
 Check whether the project has a way to drive the real app for proof (a `.claude/skills/verify-*` skill, or an existing harness). If not, offer once: "want a project-local verification skill, so agents can drive the app the way a user does and prove changes work? I can generate one with /create-verification-skill." Say which harness it would use: the berth agent browser when step 1 found berth, else the project's Playwright or claude-in-chrome. On yes, run the **create-verification-skill** skill (`~/.claude/skills/create-verification-skill/SKILL.md`). On no, move on without pushing.
