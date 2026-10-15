@@ -3,8 +3,9 @@
 
     python3 -I normalize.py raw/bugfix.jsonl meta.json > ../site/content/runs/bugfix.json
 
-meta.json holds what the log can't know: id, title, command, playbook, environment, repo,
-recorded, notes, and optionally a diff file path ("diff_file").
+meta.json holds what the log can't know: id, title, command, playbook, environment, berth (bool), repo,
+recorded, notes, and optionally a diff file path ("diff_file") and the wall-clock
+duration in seconds ("duration_s"; otherwise the sum of the turns' durations).
 """
 import json
 import sys
@@ -50,6 +51,7 @@ def main():
     pending = {}
     init_model = None
     final = None
+    results = []
     for line in open(log, encoding="utf-8", errors="replace"):
         try:
             d = json.loads(line)
@@ -60,6 +62,8 @@ def main():
             init_model = d.get("model")
             continue
         if t == "result":
+            # A run whose subagents ran in the background ends one turn per notification.
+            results.append(d)
             final = d
             continue
         parent = d.get("parent_tool_use_id")
@@ -71,7 +75,7 @@ def main():
                 agents.setdefault(agent, model)
             for b in msg.get("content") or []:
                 if b.get("type") == "text" and b.get("text", "").strip():
-                    steps.append({"kind": "text", "agent": agent, "text": trim(b["text"], 4000)})
+                    steps.append({"kind": "text", "agent": agent, "text": trim(b["text"], 4000), "raw": b["text"].strip()})
                 elif b.get("type") == "tool_use":
                     inp = b.get("input") or {}
                     step = {"kind": "tool", "agent": agent, "name": b.get("name"), "summary": summarize(b.get("name"), inp),
@@ -92,6 +96,12 @@ def main():
     if final is None:
         sys.exit("no result event in log")
     agents.setdefault("main", init_model)
+    # The final reply is also the last text block the main agent wrote; show it once.
+    last = steps[-1] if steps else None
+    if last and last.get("raw") == (final.get("result") or "").strip():
+        steps.pop()
+    for s in steps:
+        s.pop("raw", None)
     diff = None
     if meta.get("diff_file"):
         try:
@@ -100,10 +110,12 @@ def main():
             meta.pop("diff_file", None)
     run = {
         "id": meta["id"], "title": meta["title"], "command": meta["command"], "playbook": meta.get("playbook"),
-        "environment": meta["environment"], "repo": meta["repo"], "prompt": meta["prompt"],
+        "environment": meta["environment"], "berth": meta.get("berth"), "repo": meta["repo"], "prompt": meta["prompt"],
         "model": agents.get("main") or init_model, "recorded": meta["recorded"],
-        "duration_s": round((final.get("duration_ms") or 0) / 1000),
-        "cost_usd": round(final.get("total_cost_usd") or 0, 2), "turns": final.get("num_turns"),
+        "duration_s": meta.get("duration_s", round(sum(r.get("duration_ms") or 0 for r in results) / 1000)),
+        # total_cost_usd is cumulative across a session's results; the others are per result.
+        "cost_usd": round(max(r.get("total_cost_usd") or 0 for r in results), 2),
+        "turns": sum(r.get("num_turns") or 0 for r in results),
         "agents": [{"label": k, "model": v} for k, v in agents.items()],
         "steps": steps, "result": final.get("result") or "", "diff": diff, "notes": meta.get("notes", []),
     }
