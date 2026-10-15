@@ -42,7 +42,6 @@ The Principles section grounds every trigger. In your reply, name each principle
 - **Running a benchmark or reporting a speedup or regression you measured.** Use the **benchmark-checklist** skill before you report or act on the number.
 - **Any PR-status request** ("check on PR 123", "get it green", "anything outstanding") goes to the **Babysit** playbook. Declare its mode before watching.
 - **Asked to land or ship a green stack.** Use the **Shipping** playbook. Green is not safe. Nothing merges before an independent per-PR verdict.
-- **Asked to release, tag or retag.** Use the **Release** playbook.
 - **Review bots or `/code-review` commented.** Take a skeptical posture. They catch real bugs and also file non-issues. Assess each on its merits and dismiss noise with a concrete reason. Triage per `references/review-bot-triage.md`.
 - **Broken skill mid-task.** Fix it in its own PR. Don't block. Don't silently work around it.
 - **Long, autonomous or multi-phase work, or anything the user steps away from** ("while I'm gone", "no stopping until done", `/loop`, `/goal`) needs a decision trail via the **show-me-your-work** skill. Commit it when stakes need an auditable record. Keep it local otherwise.
@@ -172,8 +171,6 @@ A large or cross-cutting effort, or work the user steps away from to trust later
 - **Prototype.** A throwaway sketch to make a design or behavioral decision cheaply, or to settle an empirical fork by observing it.
 - **Design audit.** UI that has to look right: audit against the design system, screenshot light and dark, score to 8/10, iterate in rounds. File `playbooks/design-audit.md`.
 - **Visual parity.** Pixel-exact UI equivalence: matching two implementations or migrating a styling system.
-- **Parallel build.** A big build split across capped parallel delegates in their own worktrees, integrated into one PR to main. File `playbooks/parallel-build.md`.
-- **Launch video.** A launch or promo video. From scratch with the **hyperframes** skills, never Remotion. File `playbooks/launch-video.md`.
 
 **Measuring**
 
@@ -188,7 +185,6 @@ A large or cross-cutting effort, or work the user steps away from to trust later
 - **Opening a PR.** Invoked at the end of every building playbook. Requires the proof pack.
 - **Babysit.** Drive a PR to merge-ready: conflicts, review threads, CI.
 - **Shipping.** Independently verify green PRs, then land the verified ones.
-- **Release.** Cut, retag or check a release. File `playbooks/release.md`.
 - **Multi-phase or multi-PR plan.** Work that spans phases or PRs. File `playbooks/multi-phase-plan.md`.
 
 **Running long**

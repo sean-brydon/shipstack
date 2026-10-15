@@ -124,7 +124,7 @@ When the user runs Claude Code inside berth (Shipyard), shipit uses berth's skil
 
 ## Playbooks and principles
 
-Playbooks are step lists inside `/shipit`, not skills, so they have no slash command. They live in `~/.claude/skills/shipit/playbooks/`: investigation, bug-fix, perf-issue, hillclimb, runtime-forensics, trace-forensics, feature, refactoring, prototype, visual-parity, authoring-a-skill, eval, babysit, shipping, autonomous-run, orchestrate, autopilot-full, autopilot-stack, session-pickup, pause-safely, multi-phase-plan, worktree-cleanup, opening-a-pr, ideation, research, design-audit, parallel-build, launch-video, and release. More may be added. The Playbooks section of `~/.claude/skills/shipit/SKILL.md` has the current list and when each applies.
+Playbooks are step lists inside `/shipit`, not skills, so they have no slash command. They live in `~/.claude/skills/shipit/playbooks/`: investigation, bug-fix, perf-issue, hillclimb, runtime-forensics, trace-forensics, feature, refactoring, prototype, visual-parity, authoring-a-skill, eval, babysit, shipping, autonomous-run, orchestrate, autopilot-full, autopilot-stack, session-pickup, pause-safely, multi-phase-plan, worktree-cleanup, opening-a-pr, ideation, research, and design-audit. More may be added. The Playbooks section of `~/.claude/skills/shipit/SKILL.md` has the current list and when each applies.
 
 Inside `/shipit`, describing the task picks one, and these phrases name one directly:
 

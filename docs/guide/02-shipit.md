@@ -1,6 +1,6 @@
 # Route work through `/shipit`
 
-`/shipit` is the front door. You give it a goal, it matches one of twenty-nine playbooks, copies that playbook's steps into the todo list, and calls the other skills as the steps need them. In this page you learn what a good prompt looks like, and how little of one you actually need.
+`/shipit` is the front door. You give it a goal, it matches one of twenty-six playbooks, copies that playbook's steps into the todo list, and calls the other skills as the steps need them. In this page you learn what a good prompt looks like, and how little of one you actually need.
 
 ## What happens to your prompt
 
@@ -23,7 +23,7 @@ flowchart TD
     J --> K
 ```
 
-The diagram shows the common routes. shipit adds six playbooks pstack doesn't have. **Ideation** answers an idea or a "what if" with scored options in an artifact and stops for your pick. **Research** compares how other tools do something, with a scored matrix and sources. **Design audit** iterates UI in rounds of light and dark screenshots until it scores 8/10. **Parallel build** splits a big build across up to five worktree agents and lands one PR to main. **Release** cuts, retags or checks a release, deferring to the repo's own release skill. **Launch video** builds a video from scratch with the hyperframes skills. There are also playbooks for hillclimbing a metric, diagnosing runtime symptoms and captured traces, prototypes, visual parity, authoring and evaluating skills, autonomous runs, babysitting a PR or stack to merge-ready, shipping a verified stack, running a PR queue on autopilot, orchestrating project-scale programs, session pickup, pausing safely, multi-phase plans, and worktree cleanup. The [playbook directory](../../skills/shipit/playbooks/) has the full set.
+The diagram shows the common routes. shipit adds three playbooks pstack doesn't have. **Ideation** answers an idea or a "what if" with scored options in an artifact and stops for your pick. **Research** compares how other tools do something, with a scored matrix and sources. **Design audit** iterates UI in rounds of light and dark screenshots until it scores 8/10. There are also playbooks for hillclimbing a metric, diagnosing runtime symptoms and captured traces, prototypes, visual parity, authoring and evaluating skills, autonomous runs, babysitting a PR or stack to merge-ready, shipping a verified stack, running a PR queue on autopilot, orchestrating project-scale programs, session pickup, pausing safely, multi-phase plans, and worktree cleanup. The [playbook directory](../../skills/shipit/playbooks/) has the full set.
 
 ## Say the goal, not the ceremony
 
