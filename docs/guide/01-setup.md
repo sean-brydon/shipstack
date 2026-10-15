@@ -47,7 +47,7 @@ shipit spawns subagents, runs checks, and commits on branches. Under Claude Code
 
 This matters most for long runs. An overnight run that hits a permission prompt at 1am sits there until you wake up. Auto mode doesn't remove the safety rails that count. Irreversible actions still pause for you whatever the mode: force-pushing a shared branch, deploying, deleting data, messaging customers, publishing.
 
-[`skills/shipit/references/auto-mode.md`](../../skills/shipit/references/auto-mode.md) has what auto mode blocks and the settings worth adding.
+[`skills/shipit/adapters/claude-code/auto-mode.md`](../../skills/shipit/adapters/claude-code/auto-mode.md) has what auto mode blocks and the settings worth adding.
 
 ## Use berth if you have it
 

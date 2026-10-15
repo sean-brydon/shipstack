@@ -8,9 +8,9 @@ disable-model-invocation: true
 
 Investigate the motivation and intent behind code. The companion `how` skill answers what the code does and how it works. `why` answers what forces led to its shape.
 
-**Models.** Read `~/.claude/shipit/models.md` if it exists. Each spawn below names a role line there and a default. A missing file or line means the default. Set the Agent tool's `model` to that value. Omit `model` for `inherit`. Set `effort` from the file's budget line (`unlimited` max, `large` xhigh, `medium` high, `small` medium, default `large`), then adjust it for the job per the Subagents section of the **shipit** skill (`~/.claude/skills/shipit/SKILL.md`). If the Agent tool rejects a value, use the default and say so. A `codex` value cannot use this session's MCP servers, so for this skill run that seat on the role's default and say so.
+**Models.** Each spawn below names a role in `models.md`. If a role is missing, use the adapter's default for it. Set each helper's effort from the budget in `models.md`, then adjust it for the job per the Subagents section of the **shipit** skill (`<skills>/shipit/SKILL.md`). If a value can't be used here, use the default and say so. A seat on another vendor's CLI (e.g. a codex seat) may not see this session's connected tools (MCP servers), so for this skill run that seat on the role's default and say so. See your adapter.
 
-Every spawn is `subagent_type: "general-purpose"`. **Do not use `Explore` here.** It is built to locate code from excerpts. Investigators must read whole PRs, tickets, docs, and threads through MCP tools, and the synthesizer spot-checks citations through them. Every prompt says the agent must not write files, commit, or change external state.
+Every spawn is a helper that can use the session's connected tools. **Do not use a search-only helper that reads excerpts here.** It is built to locate code. Investigators must read whole PRs, tickets, docs, and threads through MCP tools, and the synthesizer spot-checks citations through them. Every prompt says the helper must not write files, commit, or change external state.
 
 ## Operating Posture
 
@@ -32,11 +32,11 @@ Before spawning investigators, build the seed context inline: file paths and lin
 
 ### Discovery
 
-Before spawning investigators, list the MCP servers this session can reach. In Claude Code every MCP tool is named `mcp__<server>__<tool>`, so the server is the middle part.
+Before spawning investigators, list the MCP servers this session can reach. Your adapter says how MCP tools are named, so you can tell which server each belongs to.
 
-1. Read the tools you already have and the deferred tool names the session lists. Group them by server.
-2. Read the "MCP Server Instructions" the session shows for each server, when present.
-3. For a server whose purpose is unclear from its tool names, load a few of its tools with ToolSearch (`+<server>` as the query) and read their descriptions.
+1. Read the tools you already have and any not-yet-loaded tool names the session lists. Group them by server.
+2. Read the instructions the session shows for each server, when present.
+3. For a server whose purpose is unclear from its tool names, load a few of its tools (see your adapter) and read their descriptions.
 4. A server that only exposes `authenticate` / `complete_authentication` tools is configured but not signed in. Treat its category as unavailable and say so as a gap, with the server name, so the user can sign in and re-run.
 
 Map each available MCP to one evidence category:
@@ -51,10 +51,10 @@ Map each available MCP to one evidence category:
 
 Source control is always available through git and `gh`. For the other six, classify using the server name, its instructions, its tool names, and their descriptions. If an MCP could fit more than one category, choose the one matching its primary evidence. Record ambiguous cases in the coverage map. A server that fits none of the seven (a design tool, a browser, a mail client) is not an investigator. Name it in Sources Consulted only if it plausibly held evidence.
 
-Spawn one investigator per category that has a matching MCP, each owning exactly one tool or MCP. Run at most 5 at once (the router's cap, or the user's) and queue the rest, spawning each wave in a single message so it runs concurrently. Don't ask one agent to cover multiple MCPs. `model`: the `why investigators` line, default `haiku`, at the budget's starting effort (not lowered). They run in the background and notify you when done. End your turn instead of polling.
+Spawn one investigator per category that has a matching MCP, each owning exactly one tool or MCP. Run at most 5 at once (the router's cap, or the user's) and queue the rest, starting each wave together so it runs concurrently. Don't ask one agent to cover multiple MCPs. Model: the `why investigators` role (a `reading` role), at the budget's starting effort (not lowered). They run in the background. End your turn; each investigator reports back when done. Don't poll.
 
 Each investigator's prompt is `references/investigator-prompt.md` filled in, plus:
-- the server name and its exact tool names, with the note that deferred tools must be loaded with ToolSearch (`select:<tool>,<tool>`) before the first call
+- the server name and its exact tool names, with the note that any not-yet-loaded tools must be loaded (see your adapter) before the first call
 - the category playbook `references/sources/<source>.md` for the selected MCP, adapted from the examples in `references/source-playbook.md`
 - `references/sources/incident-postmortem.md` **if the target code looks defensive** (null checks, retry logic, timeout handling, rate limiting, feature flags, egress guards, OOM handlers)
 - the code anchor and the user's original question
@@ -82,7 +82,7 @@ If your scope assessment suggests a single-commit trivial target where the PR de
 
 ## Step 4. Synthesize
 
-Spawn one synthesizer. `model`: the `why synthesizer` line, default `opus`. It gets:
+Spawn one synthesizer. Model: the `why synthesizer` role (a `judgment` role). It gets:
 1. The investigator findings, including any null results and any categories skipped with justification
 2. The code anchor
 3. The user's original question
@@ -98,7 +98,7 @@ Show the evidence, not only the narrative, when the record is rich enough to loo
 - **Timeline.** When the dated evidence spans several sources (commits, PRs, tickets, incidents, metric spikes), build a table with one row per item: date, source, item (PR #, ticket ID, incident ID), tier, and what it says. Order it by date.
 - **Coverage map.** Sources Consulted as a table: category, server or tool, what was searched, result (found / null / skipped / unavailable), and the reason for a skip.
 
-Inside berth, write each as a CSV outside the repo's tracked files and register it with `berthd artifact add <file>.csv --title "<target>: evidence timeline"` (see the **berth-artifacts** skill). Outside berth, put them in the reply as markdown tables. Skip the timeline when there are fewer than about five dated items. Every row cites its source, so a reader can open it.
+Write each as a CSV outside the repo's tracked files and make it something the user can open (see your adapter). Or put them in the reply as markdown tables. Skip the timeline when there are fewer than about five dated items. Every row cites its source, so a reader can open it.
 
 ## Output Format
 

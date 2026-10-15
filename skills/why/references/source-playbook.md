@@ -1,6 +1,6 @@
 # Source playbooks
 
-The why skill spawns one investigator per available evidence category, each reading a single source-specific playbook below. The playbooks are concrete examples for common MCPs. Adapt them for a different MCP in the same category. Tool names differ between MCP servers and versions, so the investigator reads the real tool list for its server (`mcp__<server>__*`) and maps each step below to the closest tool.
+The why skill spawns one investigator per available evidence category, each reading a single source-specific playbook below. The playbooks are concrete examples for common MCPs. Adapt them for a different MCP in the same category. Tool names differ between MCP servers and versions, so the investigator reads the real tool list for its server and maps each step below to the closest tool.
 
 | Category | Playbook | Example MCP it documents |
 |---|---|---|

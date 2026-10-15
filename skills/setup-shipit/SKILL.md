@@ -1,92 +1,99 @@
 ---
 name: setup-shipit
-description: Configure which model shipit uses per role and at what reasoning budget, and detect codex and berth. Writes ~/.claude/shipit/models.md, which overrides the skill defaults. Use for /setup-shipit, "configure shipit models", "shipit budget", or changing shipit's model choices.
+description: Configure which model shipit uses per role and at what reasoning budget, and detect a second vendor and berth. Writes models.md in the shipit config folder, which overrides the skill defaults. Use for /setup-shipit, "configure shipit models", "shipit budget", or changing shipit's model choices.
 ---
 
 # Setup shipit
 
-Write `~/.claude/shipit/models.md`, the file the **shipit** skill and its routed skills read at task start to pick a model per role. A missing file or a missing line means the default.
+Write `models.md` in the shipit config folder, the file the **shipit** skill and its routed skills read at task start to pick a model per role. A missing file or a missing line means the default.
 
 ## Steps
 
+### 0. Read your adapter
+
+Work out which agent you are and read its adapter in the shipit skill's folder (`<skills>/shipit/adapters/claude-code.md` for Claude Code, `<skills>/shipit/adapters/codex.md` for Codex). It names:
+
+- the shipit config folder, so where `models.md` goes (`~/.claude/shipit/` for Claude Code, `~/.agents/shipit/` for Codex),
+- the values a role accepts, and the default for every role,
+- how effort is set,
+- how a seat on another vendor runs,
+- any permissions or auto-mode step for your agent.
+
+An agent with no adapter writes `models.md` to `~/.agents/shipit/` with `inherit` for every role, and says so.
+
 ### 1. Detect what is available
 
-- **Claude models.** The `Agent` tool's `model` takes `opus`, `sonnet`, `haiku` and `fable`. Those are the families. There is nothing to probe. Effort is a separate `effort` param, set from the budget.
-- **codex (opt-in second vendor).** Run `command -v codex`. When it is on PATH, `codex` is a valid value for any role: that role runs `codex exec -s read-only` in Bash, or a berth task with `--agent codex` on a box. When it is not, never write `codex`.
-- **berth.** Check `command -v berth berthd`, `env | grep '^BERTH_'` (names only, never print values), and whether `mcp__berth__*` tools are listed. berth needs no line in the file. The skills detect it at run time and use berth tasks, the agent browser and artifacts when it is there. Report what you found, because it changes how panels run (a berth task per runner, each in its own worktree) and how proof is captured.
+- **Your own models.** The adapter lists the values a role accepts. Where it names fixed families, there is nothing to probe. Where it says the list comes from your agent (a models cache, a help command), read that list now.
+- **A second vendor (opt-in).** The adapter names the other agent's CLI and the value that runs a seat through it (`codex` from Claude Code, `claude` from Codex). Run `command -v <cli>`. When it is on PATH, that value is valid for any role. When it is not, never write it.
+- **berth.** Check `command -v berth berthd`, `env | grep '^BERTH_'` (names only, never print values), and whether berth's tools are listed in your session. berth needs no line in the file. The skills detect it at run time and use berth tasks, the agent browser and artifacts when it is there (see the berth adapter). Report what you found, because it changes how panels run (a berth task per runner, each in its own worktree) and how proof is captured.
 
-The alias `inherit` is always valid: the role runs on the parent chat's model (omit `model`).
+The value `inherit` is always valid. The role then runs on the parent session's model.
 
 ### 2. Load current state
 
-The default role-to-model mapping is the file shape in step 5. If `~/.claude/shipit/models.md` already exists, read it and treat its `# budget` line and its role values as the current choices. Otherwise start from the defaults. A line whose role is not in step 5 is from a retired role. Drop it.
+The default role-to-model mapping is the defaults block in your adapter. If `models.md` already exists in the config folder, read it and treat its `# budget` line and its role values as the current choices. Otherwise start from the defaults. A line whose role is not in the adapter's defaults block is from a retired role. Drop it.
 
 ### 3. Budget, map, and confirm
 
-**(a) Ask for a budget.** Use `AskUserQuestion` with these four options and these exact labels, and name the current budget when the file records one. With no file, say that `large` matches the skill defaults.
+**(a) Ask for a budget.** Ask the user (the structured way your adapter names when it has one, else numbered text) with these four options and these exact labels, and name the current budget when the file records one. With no file, say that `large` matches the skill defaults.
 
 - `unlimited (max effort)`
 - `large (xhigh effort)`
 - `medium (high effort)`
 - `small (medium effort)`
 
-**(b) Apply it.** The budget sets the starting `effort` for every role: `unlimited` → `max`, `large` → `xhigh`, `medium` → `high`, `small` → `medium`. It does not change any model value. At spawn time each skill raises effort one step for the hardest work, lowers it one step for judgment and two for routine work, per the Subagents section of the **shipit** skill. On a re-run, keep any role whose value differs from the default.
+**(b) Apply it.** The budget sets the starting effort for every role. `unlimited` is `max`, `large` is `xhigh`, `medium` is `high`, `small` is `medium`. It does not change any model value. At spawn time each skill raises effort one step for the hardest work, lowers it one step for judgment and two for routine work, and keeps reading roles at the starting effort, per the Helpers (subagents) section of the **shipit** skill. On a re-run, keep any role whose value differs from the default.
 
-**(c) Show the roles and confirm.** Show every role with its value as a table, and list each line step 2 dropped. Then ask with `AskUserQuestion` whether to accept as-is or change roles. For changes, take the role names and new values in the user's words, or ask per role with `AskUserQuestion`. It takes 2 to 4 options per question, so offer `opus`, `sonnet`, `fable` and `haiku` as the options, and name `inherit` (and `codex` when step 1 found it) in the question text as answers to give through its free-text Other choice. For panel roles (arena runners, architect runners, interrogate reviewers) the value is a list, and one runner spawns per entry, so the list length sets the count. A diverse panel means different families. Suggest adding `codex` to a panel when step 1 found it. `arena cross-judge pool` is also a list, but arena picks one value from it whose family differs from the parent's when it can. `swarm workers` is the default model for every worker unless a race or comparison assigns another model per arm.
+**(c) Show the roles and confirm.** Show every role with its value as a table, and list each line step 2 dropped. Then ask whether to accept as-is or change roles. For changes, take the role names and new values in the user's words, or ask per role. When your agent's structured question takes only a few options, offer the most common values as options and name the rest (`inherit`, and the second vendor's value when step 1 found it) in the question text as answers the user can type. For panel roles (arena runners, architect runners, interrogate reviewers) the value is a list, and one runner spawns per entry, so the list length sets the count. A diverse panel means different model families. Suggest adding the second vendor to a panel when step 1 found it. `arena cross-judge pool` is also a list, but arena picks one value from it whose family differs from the parent's when it can. `swarm workers` is the default model for every worker unless a race or comparison assigns another model per arm.
 
 ### 4. Validate
 
-Every value written is one of `opus`, `sonnet`, `haiku`, `fable`, `inherit`, or `codex` (only when step 1 found it on PATH). If a chosen value fails, stop and ask again.
+Every value written is one the adapter allows, `inherit`, or the second vendor's value (only when step 1 found it on PATH). If a chosen value fails, stop and ask again.
 
 ### 5. Write the file
 
-`mkdir -p ~/.claude/shipit`, then write `~/.claude/shipit/models.md` with a `# budget` line naming the chosen budget and its effort, and one line per role, using the same labels the shipit skill uses. Overwrite the whole file so re-runs stay idempotent. Shape, with the defaults:
+Create the config folder if it is missing, then write `models.md` there with a `# budget` line naming the chosen budget and its effort, and one line per role, using the same labels as the adapter's defaults block. Overwrite the whole file so re-runs stay idempotent. Start it with a comment naming the values it accepts. Shape, with placeholder values:
 
 ```
 # shipit model configuration. One line per role. Delete a line to fall back to the default.
-# Values: opus, sonnet, haiku, fable, inherit (run on the parent's model), codex (opt-in, needs codex on PATH).
+# Values: <the adapter's values>, inherit (run on the parent's model), <second vendor> (opt-in).
 # Panel roles take a list, one runner per entry.
 # budget: large (xhigh)
-feature, refactoring: sonnet
-bug-fix: sonnet
-perf-issue: sonnet
-hillclimb: sonnet
-judgment and prose: opus
-hardest tasks: opus
-how explorer: haiku
-how explainer: opus
-why investigators: haiku
-why synthesizer: opus
-reflect tooling: sonnet
-reflect judgment, divergent, synthesizer: opus
-arena runners: opus, sonnet, fable
-arena cross-judge pool: opus, fable
-swarm workers: sonnet
-verification: sonnet
-architect runners: opus, sonnet
-interrogate reviewers: opus, sonnet, fable
-recall readers: haiku
-source readers: haiku
-automate-me miners: sonnet
+feature, refactoring: <value>
+bug-fix: <value>
+perf-issue: <value>
+hillclimb: <value>
+judgment and prose: <value>
+hardest tasks: <value>
+how explorer: <value>
+how explainer: <value>
+why investigators: <value>
+why synthesizer: <value>
+reflect tooling: <value>
+reflect judgment, divergent, synthesizer: <value>
+arena runners: <value>, <value>, <value>
+arena cross-judge pool: <value>, <value>
+swarm workers: <value>
+verification: <value>
+architect runners: <value>, <value>
+interrogate reviewers: <value>, <value>, <value>
+recall readers: <value>
+source readers: <value>
+automate-me miners: <value>
 ```
+
+The first four lines are the `code` role, one per playbook. `how explorer`, `why investigators`, `recall readers` and `source readers` are the `reading` role.
 
 ### 6. Confirm
 
-Tell the user the file was written, show the final table, and say that skills read it at the start of each task, so it applies from the next task on. Re-running this skill updates it. When a default changes in a later shipit version, a file written before the change still pins the old value. Delete that line, or rerun this skill, to pick up the new default.
+Tell the user the file was written and where, show the final table, and say that skills read it at the start of each task, so it applies from the next task on. Re-running this skill updates it. When a default changes in a later shipit version, a file written before the change still pins the old value. Delete that line, or rerun this skill, to pick up the new default.
 
-Then mention permissions once. Long runs (autonomous run, `/loop`) work best in Claude Code's auto permission mode, or with an allowlist so routine commands don't stop the run. The `fewer-permission-prompts` skill builds one from the user's own transcripts. Irreversible actions (force-push to shared branches, deploys, data deletion, messages to customers, publishing) still pause for the human in any mode.
+Then mention permissions once. Long runs (autonomous run, a repeating loop) work best in a permission mode that approves routine actions, or with an allowlist so routine commands don't stop the run (your adapter names both for your agent). Irreversible actions (force-push to shared branches, deploys, data deletion, messages to customers, publishing) still pause for the human in any mode.
 
-### 7. Name your repos for auto mode
+### 7. Your adapter's permissions step
 
-Auto mode judges pushes and PRs against the `autoMode.environment` lines in `~/.claude/settings.json`. Those lines are often generated from whatever folder Claude Code first ran in, and then say there is no trusted repo, so routine pushes get refused. Fix them here.
-
-1. Run `python3 -I ~/.claude/skills/setup-shipit/scripts/automode_repos.py scan`. It lists the GitHub owners found in the user's local checkouts, marking the user's own account and the orgs they belong to.
-2. Ask with AskUserQuestion (`multiSelect: true`), which owners auto mode should treat as the user's own source control. Offer up to four owners: the user's account first, then the orgs with the most checkouts. Put the rest in the question text so the user can name them under Other. Don't preselect an employer's org: say what trusting it means (agents push branches and open PRs there without extra friction) and let the user choose.
-3. Run the same script with `apply --owners <a,b> --dry-run` and show the user the old and new lines it prints. It rewrites only five lines (Organization, Repository visibility, Default / protected branches, Source control, Trusted repo) and leaves every other line and setting alone.
-4. On the user's go, run it without `--dry-run`. It keeps a timestamped backup next to `settings.json`. Then run `claude auto-mode config` and confirm the new Source control line shows up. Changes apply to new sessions.
-
-Skip this step when the user declines, or when `settings.json` has no `autoMode` section and the user doesn't want one. Never edit `settings.json` without the user's go.
+If your adapter has an auto-mode or permissions setup step, run it now, exactly as the adapter says (Claude Code's is **Name your repos for auto mode** in `adapters/claude-code.md`). Never edit your agent's settings without the user's go. Skip this step when the adapter has none, and say so in one line.
 
 ### 8. Offer a verification skill (optional)
 
-Check whether the project has a way to drive the real app for proof (a `.claude/skills/verify-*` skill, or an existing harness). If not, offer once: "want a project-local verification skill, so agents can drive the app the way a user does and prove changes work? I can generate one with /create-verification-skill." Say which harness it would use: the berth agent browser when step 1 found berth, else the project's Playwright or claude-in-chrome. On yes, run the **create-verification-skill** skill (`~/.claude/skills/create-verification-skill/SKILL.md`). On no, move on without pushing.
+Check whether the project has a way to drive the real app for proof (a `verify-*` skill in the project's skills folder, which your adapter names, or an existing harness). If not, offer once: "want a project-local verification skill, so agents can drive the app the way a user does and prove changes work? I can generate one with the create-verification-skill skill." Say which harness it would use: the berth agent browser when step 1 found berth, else the project's Playwright or the browser driver your adapter names. On yes, run the **create-verification-skill** skill (`<skills>/create-verification-skill/SKILL.md`). On no, move on without pushing.

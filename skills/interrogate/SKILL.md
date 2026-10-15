@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 # Interrogate
 
-Spawn one reviewer per configured model to adversarially review code changes. The adversarial signal comes from model diversity, not assigned personas. The deliverable is a synthesized verdict. Do NOT auto-apply changes.
+Spawn one read-only reviewer per configured model to adversarially review code changes. The adversarial signal comes from model diversity, not assigned personas. The deliverable is a synthesized verdict. Do NOT auto-apply changes.
 
 ## Step 1, Scope
 
@@ -24,21 +24,13 @@ Before spawning reviewers, state the intent in one clear paragraph from the user
 
 ## Step 3, Spawn Reviewers
 
-Launch all reviewers in a single message, one per entry on the `interrogate reviewers` line in `~/.claude/shipit/models.md`, labeled Reviewer A, B, and so on to match the entry count. If the file or that line is missing, use the table defaults.
+Launch all reviewers at once, one per entry on the `interrogate reviewers` role in `models.md`, labeled Reviewer A, B, and so on to match the entry count. If the role is missing, use the adapter's default panel, which is three reviewers from different model families.
 
-| Reviewer | Default model |
-|----------|---------------|
-| Reviewer A | `opus` |
-| Reviewer B | `sonnet` |
-| Reviewer C | `fable` |
+Each reviewer is a read-only helper whose prompt says it must not edit files, running on its configured model. An entry that means "the session's own model" runs on it. An entry that names another vendor runs through that vendor's CLI (e.g. a codex seat), and the adapter says how. If an entry can't run here, run that reviewer on Reviewer A's model and say so. Do not block the review on it.
 
-Each reviewer is an Agent tool subagent with `subagent_type: "general-purpose"`, a prompt that says it must not edit files, and `model` set to its configured entry, or its table default when there is no configured line. Omit `model` for an `inherit` entry, so that reviewer runs on the parent model. If the Agent tool rejects an entry, run that reviewer on Reviewer A's default and say so. Do not block the review on it.
+Read `references/reviewer-prompt.md` and fill in the same template for every reviewer with the stated intent, the diff or file contents, the rubric from `references/rubric.md`, and the code-quality lens from `references/code-quality-review.md`. Set each reviewer's effort from the budget in `models.md`, then adjust it for the job per the Subagents section of the **shipit** skill (`<skills>/shipit/SKILL.md`). Keep each entry's model family, so the panel stays diverse.
 
-A `codex` entry runs that reviewer on Codex. Write its filled prompt to a file and run `codex exec -s read-only -C <repo root> -o <answer file> - < <prompt file>` in Bash with `run_in_background: true`. On a berth box, `berthd run start --template review --param session=<name>` (a read-only reviewer of that session's worktree) or a berth session with `--agent codex` and a "do not edit files" prompt work too (see the **berth-orchestrate** skill). If `codex` is not on PATH, run that reviewer on Reviewer A's default and say so.
-
-Read `references/reviewer-prompt.md` and fill in the same template for every reviewer with the stated intent, the diff or file contents, the rubric from `references/rubric.md`, and the code-quality lens from `references/code-quality-review.md`. Set each reviewer's `effort` from the budget line in `~/.claude/shipit/models.md` (`unlimited` max, `large` xhigh, `medium` high, `small` medium, default `large`), then adjust it for the job per the Subagents section of the **shipit** skill (`~/.claude/skills/shipit/SKILL.md`). Keep each entry's model family, so the panel stays diverse.
-
-The reviewers run in the background. End your turn and let them report back. Don't poll.
+The reviewers run in the background. End your turn; each reviewer reports back when it ends. Don't poll.
 
 ## Step 4, Synthesize
 
@@ -76,4 +68,4 @@ You are the lead reviewer, a pragmatic senior engineer, not a neutral aggregator
 ### Agreement Map
 [Where models agreed and diverged, and what that pattern tells us.]
 
-Back the Agreement Map with a findings table. It has one row per merged finding, with its bucket, severity, `file:line`, and one column per reviewer marking whether that model raised it. When the table has more than about eight rows, show it as an artifact. Inside berth, write it as a CSV outside the repo's tracked files and register it with `berthd artifact add <file>.csv --title "Interrogate: <change>"` (see the **berth-artifacts** skill). Outside berth, publish it with the `Artifact` tool (load the **artifact-design** skill first) or put it in the reply as a markdown table. Name the diff it reviewed (base and head SHAs) under the table.
+Back the Agreement Map with a findings table. It has one row per merged finding, with its bucket, severity, `file:line`, and one column per reviewer marking whether that model raised it. When the table has more than about eight rows, show it as an artifact. Write it as a CSV outside the repo's tracked files and make it something the user can open (see your adapter). With fewer rows, put it in the reply as a markdown table. Name the diff it reviewed (base and head SHAs) under the table.

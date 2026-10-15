@@ -1,14 +1,15 @@
 ---
 title: Introduction
-description: A skill stack for Claude Code. Type /shipit with a task; it picks the playbook, does the work and shows the proof.
+description: A skill stack for coding agents (Claude Code and Codex). Type /shipit with a task; it picks the playbook, does the work and shows the proof.
 ---
 
-**What it does.** shipstack is a set of skills for Claude Code. You type `/shipit` and a task; it picks the playbook for that kind of task, runs it, and shows proof before it calls anything done.
+**What it does.** shipstack is a set of skills for coding agents: Claude Code fully, Codex with plain fallbacks, berth optional. You type `/shipit` and a task; it picks the playbook for that kind of task, runs it, and shows proof before it calls anything done.
 
-**Why.** Plain Claude Code has no fixed process. The same kind of task gets different steps each time, and "tests pass" stands in for proof.
+**Why.** A coding agent on its own has no fixed process. The same kind of task gets different steps each time, and "tests pass" stands in for proof.
 
 ## What you get, and why
 
+- **Grilling before building.** When the what or the scope is open, [`/grill`](/skills/grill) asks numbered questions with a recommended answer each, then builds only from a brief you confirm.
 - **The right checklist.** 22 [playbooks](/playbooks), picked from your words, so a bug fix always starts with a repro.
 - **Proof before done.** Evidence sized to the change, from one check for a typo to light and dark screenshots for UI. [No proof, no PR](/proof).
 - **Small edits stay small.** The trivial lane fixed a typo in 11 s for $0.22; a bug fix with a failing test first took under a minute for $0.40.

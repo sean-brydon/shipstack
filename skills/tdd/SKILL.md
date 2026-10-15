@@ -14,18 +14,18 @@ Do not force a test when it would be impractical. If the available test would re
 
 1. **Understand the bug.** Identify the intended behavior, current behavior, affected path, and smallest observable reproduction.
 2. **Choose the narrowest executable check.** Prefer the closest unit, component, integration, or regression test already used for that codepath. If no practical test path is obvious, do not create one from scratch just to satisfy the workflow.
-3. **Write the failing test first.** Add the smallest focused test that would have caught the bug. The test should encode intended behavior, not mirror the current implementation, per the **Test Behavior, Not Implementation** principle (`~/.claude/skills/shipit/principles/test-behavior-not-implementation.md`).
+3. **Write the failing test first.** Add the smallest focused test that would have caught the bug. The test should encode intended behavior, not mirror the current implementation, per the **Test Behavior, Not Implementation** principle (`principles/test-behavior-not-implementation.md`).
 4. **Run the new test before fixing.** Confirm it fails for the intended reason. If it passes or fails for an unrelated reason, correct the test or reproduction before editing the implementation.
 5. **Fix the bug.** Make the smallest production change that satisfies the intended behavior while preserving nearby contracts.
 6. **Rerun the regression test.** Confirm the test now passes.
 
-Inside a berth worktree, run the test in the worktree's own environment with `berthd exec <loc>/<worktree> -- <test command>`. It exits with the test's exit code. Outside berth, run it with Bash.
+Run the test in the worktree's own environment, so ports and env match. It must exit with the test's exit code. See your adapter if it has a way to run a command in a worktree's environment, else run it in a shell.
 
 ## If a Failing Test Is Impractical
 
 Use the closest executable regression check instead: a targeted script, manual reproduction command, browser automation, snapshot comparison, log assertion, or focused integration check.
 
-For browser automation, use the **berth-browser** skill inside a berth worktree, else the **claude-in-chrome** skill or the Playwright setup the project already has. For a snapshot comparison of web pages, the **berth-visual-diff** skill compares the worktree against the main checkout.
+For browser automation, drive the real surface with your adapter's browser tool, or the Playwright setup the project already has. For a snapshot comparison of web pages, take screenshots and run a visual diff against main.
 
 Prefer no new test over a bad test. A bad test is one that mostly tests mocks, encodes current implementation details, depends on timing or unrelated global state, needs expensive infrastructure for a small fix, or would be deleted immediately after proving the fix.
 

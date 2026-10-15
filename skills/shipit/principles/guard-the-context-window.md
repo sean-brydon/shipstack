@@ -2,7 +2,7 @@
 
 **Applies when:** context is filling up: large outputs, long files, repeated reads, fan-out planning.
 
-Route bulk work to subagents (the Agent tool, with `subagent_type: "Explore"` for read-only searches). Keep summaries in the main thread, not raw payloads.
+Route bulk work to helpers (a read-only helper for searches). Keep summaries in the main thread, not raw payloads.
 
 **Why:** Context overflow degrades reasoning quality, creates compression artifacts, and halts progress.
 

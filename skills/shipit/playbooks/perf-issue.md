@@ -2,8 +2,8 @@
 
 **You own the measurement story. Plan, review, verify the numbers.** Tie every fix to a measurement, don't read source instead of measuring.
 
-1. Capture a baseline trace via the matching control skill (Non-negotiables). For a page inside a berth worktree, the **berth-browser** skill drives it (`berthd browser eval` reads `performance` entries), else the **claude-in-chrome** skill. For a CLI, server, or script, time it with Bash. Vet the baseline, and each later number, with the **benchmark-checklist** skill (`~/.claude/skills/benchmark-checklist/SKILL.md`). Record the exact command, the workload, the machine, and N, so anyone can rerun it.
-2. Run the **how** skill (`~/.claude/skills/how/SKILL.md`) to ground hypotheses. Don't claim a perf ceiling without running it first.
+1. Capture a baseline trace on the matching surface (Non-negotiables). For a page, drive the real surface and read the browser's `performance` entries (see your adapter). For a CLI, server, or script, time it from the shell. Vet the baseline, and each later number, with the **benchmark-checklist** skill (`<skills>/benchmark-checklist/SKILL.md`). Record the exact command, the workload, the machine, and N, so anyone can rerun it.
+2. Run the **how** skill (`<skills>/how/SKILL.md`) to ground hypotheses. Don't claim a perf ceiling without running it first.
    Try the performance mantras in order, cheapest first:
    1. Don't do it. Stop work whose result nothing uses rather than cheapening it.
    2. Do it, but don't do it again.
@@ -14,13 +14,13 @@
    7. Do it cheaper.
 
    When an earlier mantra meets the target, stop.
-3. Plan the fix from the trace. If it crosses a function boundary, run the **architect** skill (`~/.claude/skills/architect/SKILL.md`) first. Delegate implementation to a subagent using your configured perf-issue model (the `perf-issue` line in `~/.claude/shipit/models.md`, default `sonnet`). Pick each subagent's `effort` for the job, per the Subagents section of `~/.claude/skills/shipit/SKILL.md`. Review the diff. Capture a post-fix trace with the same command, workload, and N.
-   Apply the **Sequence Work into Verifiable Units** principle (`~/.claude/skills/shipit/principles/sequence-verifiable-units.md`), verifying each attempt before trying the next.
+3. Plan the fix from the trace. If it crosses a function boundary, run the **architect** skill (`<skills>/architect/SKILL.md`) first. Delegate implementation to a writing helper in its own worktree, on the `code` role's model. Pick each helper's effort for the job, per the router's Subagents section. Review the diff. Capture a post-fix trace with the same command, workload, and N.
+   Apply the **Sequence Work into Verifiable Units** principle (`principles/sequence-verifiable-units.md`), verifying each attempt before trying the next.
 4. Parse and compare the artifacts (JSON to sqlite, diff). "Inconclusive" or wrong-surface is not a pass. Flag it.
-5. Chart the result. Inside berth, write a `berth.chart` bar chart (before in `muted`, after in a series colour, `better: "lower"` or `"higher"`, `units` set, the command and N in `subtitle` or `notes`) and register it with the **berth-artifacts** skill. Add a table of the top frames or phases before and after when the trace shows where the time moved. Outside berth, publish the chart with the `Artifact` tool (load the **dataviz** and **artifact-design** skills first), or put a markdown table of baseline, post-fix, and delta in the reply.
+5. Chart the result as an artifact. Make a bar chart with before muted and after in a series colour, the direction of better stated (lower or higher), units set, and the command and N in the subtitle or notes. Add a table of the top frames or phases before and after when the trace shows where the time moved. Load the **dataviz** skill for the chart. If you cannot publish an artifact, put a markdown table of baseline, post-fix, and delta in the reply.
 6. Cite the measurement in the PR: the numbers, the command, N, and the chart or table.
-7. Run **Opening a PR** (`~/.claude/skills/shipit/playbooks/opening-a-pr.md`).
+7. Run **Opening a PR** (`playbooks/opening-a-pr.md`).
 
-For sustained improvement against a metric rather than a one-off fix, use the Hillclimb playbook (`~/.claude/skills/shipit/playbooks/hillclimb.md`).
+For sustained improvement against a metric rather than a one-off fix, use the Hillclimb playbook (`playbooks/hillclimb.md`).
 
 **Reply:** baseline number, post-fix number, delta, artifact path, and the chart or table from step 5.

@@ -1,10 +1,10 @@
 # Explainer Prompt Template
 
-Build the explainer subagent's prompt from this template. Fill in the placeholders.
+Build the explainer's prompt from this template. Fill in the placeholders.
 
 ---
 
-You are writing an architectural explanation for a senior engineer. Multiple explorer agents have traced different slices of the codebase in parallel and gathered findings. Synthesize their findings into one coherent, well-structured explanation.
+You are writing an architectural explanation for a senior engineer. Multiple read-only explorers have traced different slices of the codebase in parallel and gathered findings. Synthesize their findings into one coherent, well-structured explanation.
 
 ## Original Question
 

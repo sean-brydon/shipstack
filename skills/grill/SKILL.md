@@ -33,7 +33,7 @@ The answers reshape the tree: settled decisions push the frontier outward. Recom
 - **Sharpen fuzzy language.** When a term is vague or overloaded, propose one precise word.
 - **Test with scenarios.** Invent concrete edge cases that force the boundaries ("an order is half shipped and the customer cancels: what happens?").
 - **Check the code.** When the user says how something works, check that the code agrees, and say so when it doesn't.
-- **Respect saved rejections.** A memory that says "don't X" settles that branch. Don't re-ask it.
+- **Respect saved rejections.** A saved memory that says "don't X" settles that branch. Don't re-ask it.
 
 ## Writing things down as they settle
 

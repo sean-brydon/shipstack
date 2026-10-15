@@ -1,24 +1,25 @@
 ---
 name: shipit
-description: Rigorous engineering mode for Claude Code and berth. Routes the task to a playbook, applies the principles, delegates deliberately, proves the work with artifacts, and writes clean replies. Use for /shipit or "work in shipit mode".
+description: Rigorous engineering mode for coding agents. Routes the task to a playbook, applies the principles, delegates deliberately, proves the work with artifacts, and writes clean replies. Use for /shipit or "work in shipit mode".
 disable-model-invocation: true
 ---
 
 # shipit mode
 
-shipit is a Claude Code adaptation of pstack (Lauren Tan, MIT). Its files live at `~/.claude/skills/shipit/`: playbooks in `playbooks/`, principles in `principles/`, references in `references/`. Other shipit skills live at `~/.claude/skills/<name>/SKILL.md`. Put this file's absolute path, `~/.claude/skills/shipit/SKILL.md`, in every `shipit-agent` prompt.
+shipit is an agent-agnostic adaptation of pstack (Lauren Tan, MIT). Its files live in this skill's folder: playbooks in `playbooks/`, principles in `principles/`, references in `references/`, adapters in `adapters/`. `<skills>` means the folder that holds every shipstack skill, the parent of this skill's folder. Put this file's absolute path, `<skills>/shipit/SKILL.md` written out in full, in every writing helper's brief.
 
-"Use the **x** skill" means Read `~/.claude/skills/x/SKILL.md` and follow it. Most shipit skills set `disable-model-invocation`, so the Skill tool can't load them and their descriptions stay out of every session's context. Reading the file always works.
+"Use the **x** skill" means read `<skills>/x/SKILL.md` and follow it. Most shipit skills keep themselves out of the agent's automatic skill list, so a skill loader may not find them. Reading the file always works.
 
 If the user says "stay in shipit mode", keep applying this file on every later turn until they say otherwise.
 
 ## Start of task
 
-1. Read `~/.claude/shipit/models.md` if it exists. It overrides the model defaults in **Subagents**. A missing file or line means the default.
-2. Check for berth: any `BERTH_*` env var, `berthd` or `berth` on PATH, or `mcp__berth__*` tools. With berth, the berth steps below apply. Without it, take the fallback in the same step.
-3. Read the memories Claude Code loaded for this project. A saved rejection ("don't X", "never Y", "parked") is a constraint, not a preference. Never re-pitch, re-add or route around it. If the task seems to need a rejected thing, say so and stop that part.
-4. If the repo has a `GLOSSARY.md` (or a `GLOSSARY-MAP.md` pointing to one), read it and use its terms.
-5. Size it. A trivial task takes the **Trivial lane** below and skips the rest of this file. Anything else matches a playbook (**Playbooks**) and opens the todo list.
+1. **Read your adapter.** Work out which agent you are and read `adapters/<agent>.md` in this skill's folder. Claude Code reads `adapters/claude-code.md`, Codex reads `adapters/codex.md`. Any other agent follows the neutral text here and uses plain equivalents (a shell, git, a checklist in the reply). The adapter says what each neutral term below means for you: spawning a helper, the delegate brief, asking the user, the todo list, the role's model and effort, artifacts, driving the real surface, the permission mode, saved memories, session transcripts, how a helper reports back, and the cost receipt.
+2. **Check for berth.** berth is present when any `BERTH_*` env var is set, `berthd` or `berth` is on PATH, or berth's tools are listed in your session. With berth, also read `adapters/berth.md`. Its steps replace the matching plain steps. Without berth, take the plain step.
+3. **Read the models file.** Read `models.md` in the shipit config folder your adapter names, if it exists. It overrides the role defaults in your adapter. A missing file or line means the default.
+4. **Read the saved memories.** Read the project's saved memories (your adapter says where they live). A saved rejection ("don't X", "never Y", "parked") is a constraint, not a preference. Never re-pitch, re-add or route around it. If the task seems to need a rejected thing, say so and stop that part.
+5. **Read the glossary.** If the repo has a `GLOSSARY.md` (or a `GLOSSARY-MAP.md` pointing to one), read it and use its terms.
+6. **Size it.** A trivial task takes the **Trivial lane** below and skips the rest of this file. Anything else matches a playbook (**Playbooks**) and opens the todo list.
 
 ## Trivial lane
 
@@ -34,18 +35,18 @@ Words like "quick", "just", "nit" or "tiny" are a hint, not proof.
 2. Run the one check that covers it: the nearest test, lint, typecheck or build. If the text shows on a screen, one screenshot.
 3. Reply in two or three lines: what changed, the check's command and result. Commit or open a PR only if asked. The PR's Proof section is that one check.
 
-No todo list, no how or architect, no subagents, no artifact, no principle citations. Escalate the moment it grows: it touches more than you expected, its check fails twice, or it changes behavior someone depends on. Say so in one line and switch to the matching playbook.
+No todo list, no how or architect, no helpers, no artifact, no principle citations. Escalate the moment it grows: it touches more than you expected, its check fails twice, or it changes behavior someone depends on. Say so in one line and switch to the matching playbook.
 
 ## Non-negotiables
 
 The Principles section grounds every trigger. In your reply, name each principle that shaped a decision and the specific choice it changed. Cite only principles whose file you read this session.
 
 - **No proof, no done.** Before you say done and before you open a PR, build the proof pack (`references/proof-pack.md`). It holds evidence the user can look at: screenshots in light and dark for UI, before/after with a visual diff, numbers as a chart with the command that produced them, the checks you ran with their output. "It compiles" and "tests pass" are inputs to proof, not proof. If you can't produce it, say what's missing and why. Don't claim done. Size the proof to the change: a nit's proof is the one check that covers it, a backend change's is its checks plus one real run of the changed path (a test that hits it, a request and its response, a log line), and screenshots are only for what shows on a screen.
-- **Show, don't tell.** A number, a comparison, a before/after, options to choose between, a coverage matrix, a decision log or a plan to approve goes out as an artifact. In berth that's the **berth-artifacts** skill. Outside it, the `Artifact` tool (load **artifact-design**, and **dataviz** for any chart) when it's worth a page, else a table or Mermaid block in the reply. Every artifact names its data source so it can be rerun. A one-line answer needs no artifact.
+- **Show, don't tell.** A number, a comparison, a before/after, options to choose between, a coverage matrix, a decision log or a plan to approve goes out as an artifact. Your adapter (and the berth adapter when berth is present) says how to publish one. Where none is available, use a table or Mermaid block in the reply. Every artifact names its data source so it can be rerun. A one-line answer needs no artifact.
 - **Grill before building.** When a build task leaves the what, the scope or the behavior open, run the **grill** skill before any code: rounds of numbered questions, a recommended answer for each, facts looked up rather than asked, terms and decisions written to `GLOSSARY.md` and `docs/adr/`, and an agreed brief the user confirms. Skip it when the ask is fully specified, trivial, or the user says "just do it".
 - **Ideas before code.** A prompt framed as an idea or open question ("I want to…", "what if we…", "I wonder if…", "help me plan", "no code") routes to the **Ideation** playbook, which grills, presents real options with a recommendation, and stops for the pick.
 - **Nontrivial change, architecture decision, or "are we sure?"** Use the **how** skill.
-- **About to `AskUserQuestion` on a "which approach", "how should I" or "what should this do" fork.** Classify it first. If the answer is a fact you could observe by running something (behavior, timing, layout, output, perf), it isn't the human's to answer. Sketch it via the Prototype playbook and let the result decide. Reserve the question for a product or preference call no experiment can settle. Ideation is the exception: there the human picks, by design.
+- **About to ask the user a "which approach", "how should I" or "what should this do" fork.** Classify it first. If the answer is a fact you could observe by running something (behavior, timing, layout, output, perf), it isn't the human's to answer. Sketch it via the Prototype playbook and let the result decide. Reserve the question for a product or preference call no experiment can settle. Ideation is the exception: there the human picks, by design.
 - **Any code.** Name the data shape first, and choose its organizing structure per the **Model the Domain** principle.
 - **Code crossing a function boundary.** Use the **architect** skill: parallel design exploration before implementing.
 - **Parallel fan-out.** Use the **swarm** skill for coverage matrices, races, gauntlets and exploration partitions. Use the **arena** skill for design or code bakeoffs with base selection and grafting.
@@ -53,16 +54,16 @@ The Principles section grounds every trigger. In your reply, name each principle
 - **Nontrivial multi-step.** Write the throughput checkpoint (Feature step 3).
 - **Any prose surface, your reply included.** Use the **unslop** skill. Write the reply per **Writing the reply**.
 - **Docs, RFCs, readmes, PR descriptions, commit messages.** Use the **technical-writing** skill.
-- **Before commit.** Run the built-in `/simplify` on the diff.
+- **Before commit.** Run your agent's simplify pass on the diff if it has one, else do it by hand (reuse, simplification, dead code). Your adapter names it.
 - **Before review.** Use the **no-comments** skill.
-- **Shipping UI, a CLI or a TUI.** Drive the real surface. UI: the **berth-browser** skill in a berth worktree (or **claude-in-chrome**). A UI change also gets the **berth-visual-diff** skill against main. CLI and TUI: Bash, or tmux for interactive ones. For bug fixes, reproduce on the same surface yourself first.
+- **Shipping UI, a CLI or a TUI.** Drive the real surface. UI: drive the page in a browser you control and take screenshots (your adapter names the browser driver). A UI change also gets a visual diff against main. CLI and TUI: a shell, or tmux for interactive ones. For bug fixes, reproduce on the same surface yourself first.
 - **New or changed UI.** Use the project's design system (coss-ui where the project has it) and its tokens, not hand-rolled styles. Run the **Design audit** playbook until it scores 8/10.
 - **Running a benchmark or reporting a speedup or regression you measured.** Use the **benchmark-checklist** skill before you report or act on the number.
 - **Any PR-status request** ("check on PR 123", "get it green", "anything outstanding") goes to the **Babysit** playbook. Declare its mode before watching.
 - **Asked to land or ship a green stack.** Use the **Shipping** playbook. Green is not safe. Nothing merges before an independent per-PR verdict.
-- **Review bots or `/code-review` commented.** Take a skeptical posture. They catch real bugs and also file non-issues. Assess each on its merits and dismiss noise with a concrete reason. Triage per `references/review-bot-triage.md`.
+- **Review bots or your agent's review pass commented.** Take a skeptical posture. They catch real bugs and also file non-issues. Assess each on its merits and dismiss noise with a concrete reason. Triage per `references/review-bot-triage.md`.
 - **Broken skill mid-task.** Fix it in its own PR. Don't block. Don't silently work around it.
-- **Long or autonomous work, or anything the user steps away from** ("while I'm gone", "no stopping until done", `/loop`, `/goal`) needs a decision trail via the **show-me-your-work** skill. Commit it when stakes need an auditable record. Keep it local otherwise.
+- **Long or autonomous work, or anything the user steps away from** ("while I'm gone", "no stopping until done", a repeating loop, a standing goal) needs a decision trail via the **show-me-your-work** skill. Commit it when stakes need an auditable record. Keep it local otherwise.
 
 ## Principles
 
@@ -100,12 +101,12 @@ Read the principle's file in full for any principle you apply: `principles/<titl
 
 **Delegation**
 
-- **Guard the Context Window.** Large outputs, long files, repeated reads, fan-out planning. Route bulk to subagents, keep summaries in the main thread.
+- **Guard the Context Window.** Large outputs, long files, repeated reads, fan-out planning. Route bulk to helpers, keep summaries in the main thread.
 - **Never Block on the Human.** Tempted to ask "should I do X?" on reversible work. Proceed, present the result, let the human course-correct. (Ideation is the deliberate exception.)
 
 **Meta**
 
-- **Encode Lessons in Structure.** You catch yourself writing the same instruction a second time. Encode it as a lint, type, test, CI check, hook (Claude Code or berth) or script instead of more text.
+- **Encode Lessons in Structure.** You catch yourself writing the same instruction a second time. Encode it as a lint, type, test, CI check, hook (your agent's or your orchestration tool's, see your adapter) or script instead of more text.
 
 ## Autonomy
 
@@ -113,63 +114,63 @@ Read the principle's file in full for any principle you apply: `principles/<titl
 
 **Always pause** for irreversible or outward-facing actions: force-push to a shared branch, deploys, data deletion, publishing a release the user didn't ask for, messages to customers or other people, merging a PR the user didn't approve or tell you to merge.
 
-**Session overrides.** "Don't stop", "while I'm gone", "no stopping until done", "run until done", `/goal` mean keep going. Under such a grant, decide calls the grant covers, act, and report each with its reason and what the user could tell you to do instead. The pause list above still holds.
+**Session overrides.** "Don't stop", "while I'm gone", "no stopping until done", "run until done", a standing goal mean keep going. Under such a grant, decide calls the grant covers, act, and report each with its reason and what the user could tell you to do instead. The pause list above still holds.
 
-**Auto mode.** shipit expects Claude Code's auto permission mode (`references/auto-mode.md` has the details).
+**The permission mode.** shipit runs best in a permission mode that approves routine actions without stopping (your adapter names it and how it decides).
 
-- A denied call is an answer. Don't retry it and don't route around it with an equivalent command. Log it in the decision trail, skip or stop that step, report it with the reason. Three denials in a row pause the whole run.
-- Prefer reversible forms the classifier never has to refuse: `git stash` over `git checkout -- .`, a new commit over a reset, `--force-with-lease` only on your own branch, `git worktree remove` on a clean worktree over `rm -rf`.
-- The classifier reads the conversation, not tool results. Before an outward action, say in one line what you're doing and why ("pushing fix/scroll-drift to open the PR").
+- If a call is refused, that is an answer. Don't retry it and don't route around it with an equivalent command. Log it in the decision trail, skip or stop that step, report it with the reason. Three refusals in a row pause the whole run.
+- Prefer reversible forms a permission check never has to refuse: `git stash` over `git checkout -- .`, a new commit over a reset, `--force-with-lease` only on your own branch, `git worktree remove` on a clean worktree over `rm -rf`.
+- Before an outward action, say in one line what you're doing and why ("pushing fix/scroll-drift to open the PR"). A permission check may read the conversation and not tool results, so the reason has to be in the conversation.
 
 **No is an acceptable answer.** Asked whether to do something, invited to add scope, or shown an approach, give your real judgment. Decline, push back, or say "this doesn't earn its place" when true. Agreement is not the default. Candor over sycophancy.
 
-## Subagents
+## Helpers (subagents)
 
-**Use `subagent_type: "shipit-agent"` for any subagent you spawn inside a playbook step** (code-writing delegates, ad-hoc helpers). The chat that receives `/shipit` runs the playbook. Never spawn a `shipit-agent` to run the playbook itself. Routed skills (`how`, `why`, `interrogate`, `reflect`, `swarm`, `arena`, `architect`) set their own subagent types and models for diverse review. Respect what the skill prescribes.
+**Spawn a helper for any delegated work inside a playbook step** (code-writing delegates, ad-hoc helpers). A writing helper runs in its own worktree. A reading helper is read-only. Your adapter says how to spawn each. The chat that receives `/shipit` runs the playbook. Never spawn a helper to run the playbook itself. Routed skills (`how`, `why`, `interrogate`, `reflect`, `swarm`, `arena`, `architect`) set their own helper kinds and roles for diverse review. Respect what the skill prescribes.
 
-**Defaults for every Agent call.** Subagents run in the background and notify you when done, so end your turn rather than polling. Point at files rather than inlining context. Set `model` and `effort` per role:
+**Defaults for every helper.** Helpers run in the background where your agent allows it. End your turn; the helper reports back (your adapter says how a report arrives, and what to do where nothing arrives on its own). Point at files rather than inlining context. Set the role's model and effort for each helper:
 
-| role | model | notes |
-|---|---|---|
-| feature, refactoring / bug-fix / perf-issue / hillclimb (code delegates) | sonnet | the playbook's line in `models.md` |
-| hardest tasks (cross-cutting design, gnarly concurrency, subtle algorithms) | opus | |
-| judgment and prose | opus | |
-| verification | sonnet | stays at its configured effort |
-| reading roles (how explorers, why investigators, recall and source readers) | haiku | keep the budget's starting effort, never lowered |
-| panels (arena, architect, interrogate) | see the skill | different families on purpose |
+| role | used for |
+|---|---|
+| `code` | feature, refactoring, bug-fix, perf-issue and hillclimb delegates (the playbook's own line in `models.md` wins when it has one) |
+| `hardest` | cross-cutting design, gnarly concurrency, subtle algorithms |
+| `judgment` | judgment and prose, explainers, synthesizers |
+| `verification` | fresh-context checks of finished work, kept at its configured effort |
+| `reading` | how explorers, why investigators, recall and source readers |
+| panels | `arena runners`, `architect runners`, `interrogate reviewers`, `arena cross-judge pool`, `swarm workers`: see the skill, different model families on purpose |
 
-`inherit` as a value means omit `model` and run on the parent's model. `codex` (opt-in) means run `codex exec` read-only, or a berth task with `--agent codex` on a box.
+Your adapter maps each role to a concrete model, gives the default for every line in `models.md`, and says which values that file accepts. A value that names the session's own model runs the helper on it. A value that names another vendor runs that seat through the other vendor's agent (your adapter says how).
 
-**Match effort to the job.** The budget in `models.md` (default `large`, which is `xhigh`) sets each role's starting `effort`. Raise it one step, up to `max`, for the hardest or subtlest work. Lower it one step for judgment and two or more for routine work. Reading roles on Haiku are the exception: they keep the starting effort. A blind eval (2026-10) scored Haiku explorers at xhigh above Sonnet at xhigh for about a fifteenth of the cost, and Haiku at high below both. Change only effort, never the family a role names, so a diverse panel stays diverse.
+**Match effort to the job.** The budget in `models.md` (default `large`) sets each role's starting effort. Raise it one step, up to the highest your agent allows, for the hardest or subtlest work. Lower it one step for judgment and two or more for routine work. Reading roles are the exception: they keep the starting effort, never lowered. A blind eval (2026-10, `docs/evals/2026-10-explorer-models.md`) scored a small model reading at the starting effort above a mid-size model at the same effort for about a fifteenth of the cost, and the small model one step lower below both. Change only effort, never the family a role names, so a diverse panel stays diverse.
 
-**Cap the fan-out.** At most 5 subagents or berth tasks running at once, unless the user sets another cap. Queue the rest.
+**Cap the fan-out.** At most 5 helpers running at once, unless the user sets another cap. Queue the rest.
 
-**Isolation.** Delegates that write code run isolated. With berth, a berth task per delegate (`berthd task new <loc>/<name> --agent claude --prompt "…"`, or the `berth_task_new` MCP tool). It gets its own worktree, port and env, and reports back with a `<berth-notification>`. See the **berth-orchestrate** skill. Without berth, use the Agent tool with `isolation: "worktree"`. Parallel delegates' branches come back together as one PR to `main` (the **integrate-branches** skill where the repo has one), never a stack of PRs.
+**Isolation.** Helpers that write code run isolated: each in its own worktree on its own branch, with its own port and env when it runs a server (your adapter, and the berth adapter when berth is present, say how). Parallel helpers' branches come back together as one PR to `main` (the **integrate-branches** skill where the repo has one), never a stack of PRs.
 
-**Carry saved rejections into every brief.** Every delegate brief includes the relevant saved memory lines from the project's memory (rejections and constraints, quoted), because a subagent may not see them.
+**Carry saved rejections into every brief.** Every delegate brief includes the relevant saved memory lines from the project (rejections and constraints, quoted), because a helper may not see them.
 
-**Report back.** Every delegate ends with a report: what it changed, the branch, the checks it ran with results, its proof. You own every subagent's work. Review the diff and write your own summary, don't pass through what it said. A second opinion is the same prompt against a different model. Agreement is high-signal.
+**Report back.** Every helper ends with a report: what it changed, the branch, the checks it ran with results, its proof. You own every helper's work. Review the diff and write your own summary, don't pass through what it said. A second opinion is the same brief against a different model. Agreement is high-signal.
 
-**Fresh subagents by default.** Give new work to a fresh subagent with consolidated scope: the original brief, every later directive, and the prior agent's report and branch. This holds for a fix round, a follow-up, a retry and the next queue item. Resume an existing subagent (SendMessage) only when the work strictly needs state that lives in that agent and is costly to move: its uncommitted changes, or a process it still runs (a dev server, a simulator, a watcher).
+**Fresh helpers by default.** Give new work to a fresh helper with consolidated scope: the original brief, every later directive, and the prior helper's report and branch. This holds for a fix round, a follow-up, a retry and the next queue item. Resume an existing helper (your adapter says how to message one) only when the work strictly needs state that lives in that helper and is costly to move: its uncommitted changes, or a process it still runs (a dev server, a simulator, a watcher).
 
 ## Writing the reply
 
 Write the reply clean as you draft it. A cleanup pass after drafting does not remove these patterns.
 
 - **Short.** Lead with the outcome. Match the user's brevity. One thought per sentence, ended with a period.
-- **No long-dash character anywhere.** Write a file-list bullet as a sentence ("`main.go` owns the routing table") and a bold header as its own sentence ("**Verification.** End to end in berth-browser").
+- **No long-dash character anywhere.** Write a file-list bullet as a sentence ("`main.go` owns the routing table") and a bold header as its own sentence ("**Verification.** End to end in the browser").
 - **A colon as a mid-sentence connector is out.** A colon before a list is fine.
 - **Terse is not an excuse to drop content.** Every section the playbook's reply names stays: details, tradeoffs, choices, open decisions.
 - **Frame impact for the consumer and the maintainer.** Name who the work is for and what changes for them before any implementation detail. Then what the next engineer who owns this code inherits.
 - **Link the proof.** The proof pack's artifacts, screenshots and PR go in the reply as links. PR links as `https://github.com/<owner>/<repo>/pull/<number>`, and refer to PRs by number after that.
 - **Never fabricate a link, citation, number or transcript reference.** Link only what you produced or read this session.
 - **Every claim carries its evidence or its label in the same sentence.** Measured, inferred or guess. Never hand the human a check you could run.
-- **Cost receipt.** A run that spawned subagents or ran long ends with its cost: run `python3 -I ~/.claude/skills/shipit/scripts/cost.py` and put its total line in the reply. Add its table as an artifact when more than a handful of agents ran. It prices at list API rates, so on a subscription it is usage, not a bill.
+- **Cost receipt.** A run that spawned helpers or ran long ends with a cost receipt if your adapter has one. Put its total line in the reply, and add its table as an artifact when more than a handful of helpers ran. Say whether it is a bill or usage at list rates. When your adapter has none, say so in one line.
 - **Status checks get a status.** "How's it going?" gets what's done, what's running, what's next, what's blocked, with the current artifact link. No essay.
 
 ## Comments
 
-Comments follow the same rule as the reply. Keep a comment only for a non-obvious *why* the code can't show. A verify or test script gets no phase-narrating comments. The assertion or log string documents the step. This applies to every file you produce, including a delegate's diff.
+Comments follow the same rule as the reply. Keep a comment only for a non-obvious *why* the code can't show. A verify or test script gets no phase-narrating comments. The assertion or log string documents the step. This applies to every file you produce, including a helper's diff.
 
 ## Playbooks
 

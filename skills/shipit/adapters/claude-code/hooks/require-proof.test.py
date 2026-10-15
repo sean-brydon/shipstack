@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run: python3 -I ~/.claude/skills/shipit/hooks/require-proof.test.py"""
+"""Run: python3 -I ~/.claude/skills/shipit/adapters/claude-code/hooks/require-proof.test.py"""
 import json
 import os
 import subprocess

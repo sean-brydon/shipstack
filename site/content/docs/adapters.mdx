@@ -1,0 +1,20 @@
+---
+title: Adapters
+description: The skills say what to do; one adapter per agent says how.
+---
+
+**What it does.** Every skill, playbook and principle is written in neutral words ("spawn a read-only helper", "ask the user", "the reading model"). One adapter file per environment maps those words to real tools.
+
+**Why.** The process is the valuable part, and it shouldn't be locked to one agent. Tool names change; the checklist doesn't.
+
+| neutral step | Claude Code | Codex | berth (optional layer) |
+|---|---|---|---|
+| spawn a helper | subagent, own worktree for writing | background `codex exec`, `git worktree add` for writing | a berth task per helper, reports back on its own |
+| ask the user | structured questions when they fit | numbered questions in the reply | same as the agent |
+| model per role | `haiku` / `sonnet` / `opus` / `fable` + effort | `-m` and `model_reasoning_effort` per run | same as the agent |
+| an artifact | Artifact page or a table | a table, or an HTML/CSV file | berth-artifacts in Shipyard |
+| screenshots, visual diff | browser tools or Playwright | browser tools or Playwright, paired shots | berth-browser, berth-visual-diff |
+| proof hook | opt-in `PreToolUse` hook | Proof section checked by hand | `before:` hook |
+| cost receipt | dollars by agent and model | token totals from the session log | same as the agent |
+
+Install puts the skills in `~/.claude/skills` and `~/.agents/skills` (where Codex reads them) for whichever agents it finds. The adapters live in [`skills/shipit/adapters/`](https://github.com/sean-brydon/shipstack/tree/main/skills/shipit/adapters).
