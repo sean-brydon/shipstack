@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Cost receipt for a Claude Code session and its subagents, at list API prices.
 
-    python3 -I ~/.claude/skills/shipit/scripts/cost.py              # this session
+    python3 -I ~/.claude/skills/shipit/adapters/claude-code/scripts/cost.py              # this session
     python3 -I cost.py --session <id> [--csv out.csv] [--all-agents]
 
 Reads ~/.claude/projects/<slug>/<session>.jsonl and <session>/subagents/*.jsonl.

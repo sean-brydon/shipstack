@@ -1,6 +1,6 @@
 ---
 name: reflect
-description: Spawn three parallel review subagents over the active Claude Code transcript, surface learnings, and route each to a concrete edit on an existing skill. Use when the user says reflect.
+description: Spawn three parallel review helpers over the active session transcript, surface learnings, and route each to a concrete edit on an existing skill. Use when the user says reflect.
 disable-model-invocation: true
 ---
 
@@ -12,49 +12,43 @@ Invoke when the user says "reflect" or "/reflect". Skip when the conversation is
 
 ## 1. Locate the active transcript
 
-Before fanning out, find this conversation's transcript in the active project's directory, `~/.claude/projects/<slug>/` (the slug rule and the record shapes are in `~/.claude/skills/recall/references/transcripts.md`). Do not glob across `~/.claude/projects/*/`. That crosses workspace boundaries and reads private chats from unrelated projects.
+Before fanning out, find this conversation's transcript among the active project's session transcripts (your adapter says where they live and what a record looks like). Do not search other projects' transcripts. That crosses workspace boundaries and reads private chats from unrelated projects.
 
-```bash
-slug=$(printf '%s' "$PWD" | sed 's/[^A-Za-z0-9-]/-/g')
-ls ~/.claude/projects/"$slug"/"$CLAUDE_CODE_SESSION_ID".jsonl 2>/dev/null \
-  || ls -t ~/.claude/projects/"$slug"/*.jsonl | head -10
-```
-
-`$CLAUDE_CODE_SESSION_ID` names this chat's file when it is set. Otherwise, for each candidate, pull the first human turn with the filter in `transcripts.md` and take the file whose first human turn is this conversation's opening prompt. The chat's subagents are in `<session-id>/subagents/agent-*.jsonl`, and reviewers read them when a finding hinges on what a delegate did. If no file matches, pass a tight digest of the session instead.
+If your agent exposes the current session id, it names this chat's file. Otherwise list the project's transcripts newest first, pull the first human turn from each candidate, and take the file whose first human turn is this conversation's opening prompt. The chat's helpers have transcripts of their own, and reviewers read them when a finding hinges on what a delegate did. If no file matches, pass a tight digest of the session instead.
 
 ## 2. Spawn three reviewers in parallel
 
-One message, three `Agent` calls, `subagent_type: "general-purpose"`. Reviewers need MCP access to look up the tickets, chat threads, and observability traces the transcript references. They run in the background and notify on completion. End your turn instead of polling.
+Spawn three read-only helpers in one go. Fill `<ABSOLUTE_PATH>` in each template with the transcript's path, and `<TRANSCRIPT_NOTES_PATH>` with the absolute path of your adapter's transcript notes (`<skills>/shipit/adapters/claude-code/transcripts.md` for Claude Code, the Transcripts section of `<skills>/shipit/adapters/codex.md` for Codex), written out in full. Reviewers need access to the ticket tracker, chat, and observability tools, if you have them, to look up the tickets, chat threads, and traces the transcript references. End your turn after spawning them. The helpers report back when they finish.
 
-Each reviewer and the synthesizer name a role line in `~/.claude/shipit/models.md` and a default. Set `model` to that line's value, or to the default if the file or the line is missing. Leave `model` unset when the value is `inherit`. When the value is `codex`, run the same prompt with `codex exec -s read-only -o <out-file> "<prompt>"` in a background Bash and read `<out-file>` when it finishes. Codex has no access to your MCP tools, so say which lookups it skipped. Set each subagent's `effort` for the job, per the Subagents section of the **shipit** skill (`~/.claude/skills/shipit/SKILL.md`).
+Each reviewer and the synthesizer name a role line in the shipit models file and a default role. Use that line's model, or the default role's model if the file or the line is missing. If the value names a different agent family, run the same prompt through that agent (see your adapter) and say which lookups it skipped for lack of tools. Set each helper's effort for the job, per the Helpers section of the **shipit** skill.
 
-| Lens | Role line | Default `model` | Prompt template |
+| Lens | Role line | Default role | Prompt template |
 |---|---|---|---|
-| Judgment | `reflect judgment, divergent, synthesizer` | `opus` | `references/judgment-reviewer.md` |
-| Tooling | `reflect tooling` | `sonnet` | `references/tooling-reviewer.md` |
-| Divergent | `reflect judgment, divergent, synthesizer` | `opus` | `references/divergent-reviewer.md` |
+| Judgment | `reflect judgment, divergent, synthesizer` | `judgment` | `references/judgment-reviewer.md` |
+| Tooling | `reflect tooling` | `code` | `references/tooling-reviewer.md` |
+| Divergent | `reflect judgment, divergent, synthesizer` | `judgment` | `references/divergent-reviewer.md` |
 
 Pass each template verbatim, substituting the transcript path or digest where marked. Reviewers return findings in their final report.
 
 ## 3. Synthesize
 
-One `Agent` call, `subagent_type: "general-purpose"`, `model` from the `reflect judgment, divergent, synthesizer` line (default `opus`). It spot-verifies citations through MCP. Pass `references/synthesizer.md` verbatim, with each reviewer's full output inlined where marked. It returns an Accepted / Rejected / Backlog list.
+Spawn one helper with the `reflect judgment, divergent, synthesizer` model (default role `judgment`). It spot-verifies citations through whatever lookup tools it has. Pass `references/synthesizer.md` verbatim, with each reviewer's full output inlined where marked. It returns an Accepted / Rejected / Backlog list.
 
 ## 4. Structural enforcement check
 
-Move any Accepted item that a lint rule, script, metadata flag, hook, or runtime check would enforce more reliably to Backlog. See the **Encode Lessons in Structure** principle (`~/.claude/skills/shipit/principles/encode-lessons-in-structure.md`). The **correct** skill builds that kind of enforcement when the user wants it now.
+Move any Accepted item that a lint rule, script, metadata flag, hook, or runtime check would enforce more reliably to Backlog. See the **Encode Lessons in Structure** principle (`<skills>/shipit/principles/encode-lessons-in-structure.md`). The **correct** skill builds that kind of enforcement when the user wants it now.
 
 ## 5. Apply
 
-Present the synthesizer's full Accepted / Rejected / Backlog output and wait for explicit approval before applying any Accepted edit. Inside berth, register it as a notes artifact with the **berth-artifacts** skill (`berthd artifact add reflect.md --title "Reflect: proposed skill edits"`), since it is a plan the user approves row by row. Outside berth, put it in the reply. The user picks the subset and may redirect routings. Skill changes affect every future agent that loads them. Do not auto-apply.
+Present the synthesizer's full Accepted / Rejected / Backlog output and wait for explicit approval before applying any Accepted edit. Since it is a plan the user approves row by row, show it as an artifact if you can, else put it in the reply. The user picks the subset and may redirect routings. Skill changes affect every future agent that loads them. Do not auto-apply.
 
 Present the Backlog items with the Accepted list and file them only on the user's go. Never run `gh issue create` (or file to any tracker) without approval.
 
 Follow each approved row's Routing exactly:
 
 - Trivial existing-skill edit (a one-line bullet, a tightened sentence, a stale fact corrected): the parent does it directly.
-- Substantive existing-skill edit (a new section, a new pattern table, more than ~10 lines): run the Authoring a skill playbook (`~/.claude/skills/shipit/playbooks/authoring-a-skill.md`) and its draft / test / iterate loop. The `anthropic-skills:skill-creator` skill, if installed, helps with the loop.
-- `tune description: <skill path>` (the skill exists but didn't trigger when it should have): run the same playbook's description work. Claude Code shows every description in every session, so the edit makes the trigger sharper, not the description longer.
+- Substantive existing-skill edit (a new section, a new pattern table, more than ~10 lines): run the Authoring a skill playbook (`<skills>/shipit/playbooks/authoring-a-skill.md`) and its draft / test / iterate loop. A skill-creator skill, if you have one, helps with the loop.
+- `tune description: <skill path>` (the skill exists but didn't trigger when it should have): run the same playbook's description work. Agents show every skill description in every session, so the edit makes the trigger sharper, not the description longer.
 - `new skill via authoring playbook: <kebab-name>`: hand creation to the Authoring a skill playbook. Do not invent the shape ad hoc.
 
 If your environment ships a SKILL.md validator, run it on every touched skill before declaring done.

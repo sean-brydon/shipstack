@@ -19,6 +19,6 @@ An opt-in `PreToolUse` hook refuses `gh pr create` when the PR body has no `## P
 
 ```json
 "PreToolUse": [
-  { "matcher": "Bash", "hooks": [ { "type": "command", "command": "python3 -I ~/.claude/skills/shipit/hooks/require-proof.py" } ] }
+  { "matcher": "Bash", "hooks": [ { "type": "command", "command": "python3 -I ~/.claude/skills/shipit/adapters/claude-code/hooks/require-proof.py" } ] }
 ]
 ```

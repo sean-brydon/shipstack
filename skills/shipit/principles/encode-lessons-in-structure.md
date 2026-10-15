@@ -8,13 +8,14 @@ Encode the rule as a lint, metadata flag, runtime check, script, or hook instead
 
 Pick the highest rung that can catch the mistake. A higher rung fires earlier and cannot be skipped by an agent that did not read the instruction.
 
-1. **A type, schema, or metadata flag.** The wrong thing does not compile or cannot be written. See the [Type System Discipline](~/.claude/skills/shipit/principles/type-system-discipline.md) principle.
+1. **A type, schema, or metadata flag.** The wrong thing does not compile or cannot be written. See the [Type System Discipline](type-system-discipline.md) principle.
 2. **A lint rule.** The wrong pattern fails the linter in the editor and in CI.
 3. **A runtime check.** The wrong state fails loudly where it starts, with a message that names the rule.
 4. **A script or CI check.** A rerunnable check fails the build when the rule breaks.
 5. **A hook that refuses the action.** Use this when the mistake is an action an agent takes, not code it writes.
-   - **Claude Code hooks** live in `settings.json` (the **update-config** skill edits it). A `PreToolUse` hook runs before a tool call and can block it, so a forbidden command or an edit to a protected path never happens. A `PostToolUse` hook runs after a tool call, so it can run the formatter, the linter, or the type check on the edited file and feed the failure back to the agent. A `Stop` hook runs when the agent tries to finish and can send it back to work, for example until the tests pass.
-   - **berth hooks** (the **berth-hooks** skill) gate berth actions. A `before:` hook runs first and refuses the action by exiting non-zero, and what it prints is the error everyone sees. `before:worktree.create` can refuse a worktree on `main`, and `before:exec` or `before:session.send` can refuse a command or a prompt. A repository hook lives in `.berth/config.json` and travels with the repo. Test it with `berthd emit` before you rely on it.
+   - **A hook in your agent.** A before-action hook runs before a tool call and can block it, so a forbidden command or an edit to a protected path never happens. An after-action hook runs after a tool call, so it can run the formatter, the linter, or the type check on the edited file and feed the failure back to the agent. A stop hook runs when the agent tries to finish and can send it back to work, for example until the tests pass.
+   - **A hook in your orchestration tool.** A before-hook there runs first and refuses the action by exiting non-zero, and what it prints is the error everyone sees. It can refuse a worktree on `main`, or a command or a prompt sent to another agent. A hook kept in the repository travels with the repo. Test it before you rely on it.
+   - Your adapter names where each kind of hook lives and how to test it.
 6. **An instruction.** The last rung, for a lesson that needs judgment.
 
 If the lesson needs judgment and cannot be encoded, make the instruction more prominent and add an example of the failure mode.

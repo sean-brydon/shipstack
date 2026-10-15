@@ -1,5 +1,7 @@
 # Porting pstack to shipit
 
+**Current contract: `docs/agnostic.md`.** shipstack is now agent-agnostic. Skills, playbooks and principles use a neutral vocabulary, and everything specific to Claude Code, Codex or berth lives in one adapter per environment under `skills/shipit/adapters/`. Where this file names a Claude Code tool, path or setting, that mapping now lives in `skills/shipit/adapters/claude-code.md`. Read this file for the pstack history and the re-sync rules, and `docs/agnostic.md` for how a file is written today.
+
 shipit is a Claude Code adaptation of [pstack](https://github.com/cursor/plugins/tree/main/pstack) by Lauren Tan (MIT). This file is the contract for porting a pstack file to shipit, and for re-syncing later.
 
 Upstream pinned at `cursor/plugins@1e5c90a4b6f249917bd21fe361b3a2a7deb741b8` (2026-10-14).
@@ -67,7 +69,7 @@ Principles are files, not skills, because Claude Code lists every skill's descri
 | `control-ui` (cursor-team-kit) | the **berth-browser** skill inside a berth worktree, else the **claude-in-chrome** skill |
 | `control-cli` | drive the CLI or TUI with Bash, or tmux (`tmux new -d`, `send-keys`, `capture-pane`) for interactive ones |
 | Cursor cloud agents / background agents | berth tasks on a box (`berthd task new`), see the **berth-orchestrate** skill |
-| Cursor agent transcripts (`~/.cursor/...`) | Claude Code transcripts: `~/.claude/projects/<cwd-slug>/*.jsonl` (cwd with every non-alphanumeric character replaced by `-`, see `~/.claude/skills/recall/references/transcripts.md`) |
+| Cursor agent transcripts (`~/.cursor/...`) | Claude Code transcripts: `~/.claude/projects/<cwd-slug>/*.jsonl` (cwd with every non-alphanumeric character replaced by `-`, see `~/.claude/skills/shipit/adapters/claude-code/transcripts.md`) |
 | `~/.cursor/rules/pstack-models.mdc` (always-applied rule) | `~/.claude/shipit/models.md`, read by the router and the routed skills at task start |
 | `~/.cursor/plugins/**/skills/poteto-mode/SKILL.md` lookup | `~/.claude/skills/shipit/SKILL.md` |
 | Origin CLI (landing stacks) | `gh` only |
@@ -131,7 +133,7 @@ The owner of shipit works from evidence: artifacts, charts and data that back a 
 
 ## Permission modes
 
-shipit should run well under Claude Code's auto mode (the classifier approves routine actions, so the agent rarely stops). Long runs (autonomous run, `/loop`) assume auto mode or a permission allowlist. Irreversible actions (force-push to shared branches, deploys, data deletion, messages to customers, publishing) still pause for the human, whatever the mode. `skills/shipit/references/auto-mode.md` has what auto mode blocks and how shipit behaves under it.
+shipit should run well under Claude Code's auto mode (the classifier approves routine actions, so the agent rarely stops). Long runs (autonomous run, `/loop`) assume auto mode or a permission allowlist. Irreversible actions (force-push to shared branches, deploys, data deletion, messages to customers, publishing) still pause for the human, whatever the mode. `skills/shipit/adapters/claude-code/auto-mode.md` has what auto mode blocks and how shipit behaves under it.
 
 ## Writing
 

@@ -27,14 +27,14 @@ For a quick ballpark the user asked for, one run is enough. Still check question
 6. **Does it matter?** Next to any micro result, measure the end-to-end path a user waits on, with realistic data sizes and concurrency, and report the micro result as a share of the whole. A helper that takes 1% of a request can make the request at most 1% faster, however fast the helper gets.
 7. **Did it even happen?** Confirm the work ran inside the timed region: the request reached the server, the rows were written, the bytes were read, and the code used the result. Lazy code (generators nobody iterates, promises nobody awaits, results the JIT can discard) and timeouts produce numbers for work that never happened.
 
-Inside a berth worktree, run each side in its own worktree's environment with `berthd exec <loc>/<worktree> -- <bench command>` so ports and env match what that side ships with. Two worktrees on one box share its cores, so alternate the sides rather than running them at once.
+When each side lives in its own worktree, run it in that worktree's own environment, so ports and env match what that side ships with (see your adapter if it has a way to run a command in a worktree's environment). Two worktrees on one machine share its cores, so alternate the sides rather than running them at once.
 
 ## Report
 
 - Lead with the verdict: faster, slower, no measurable difference, or inconclusive.
 - Give the number with its unit, the run count, the range, and the limiter. For example, "p50 41 ms → 33 ms, median of 7 runs per side, range 32 to 35 ms after, bound by JSON parsing on one core."
 - Call the verdict inconclusive when you claim a difference but cannot name the limiter, when a side ran untuned, or when you could not check questions 4 and 7. Name the gap.
-- Keep a PR body to one primary number, per the **Opening a PR** playbook (`~/.claude/skills/shipit/playbooks/opening-a-pr.md`). Put the runs, range, and limiter evidence in a linked artifact or notes file.
+- Keep a PR body to one primary number, per the **Opening a PR** playbook (`<skills>/shipit/playbooks/opening-a-pr.md`). Put the runs, range, and limiter evidence in a linked artifact or notes file.
 
 ### Show the number
 
@@ -44,9 +44,9 @@ A vetted number goes out as something the reader can look at, with the command t
 - **The table.** The per-run file from "Before you run anything", one row per run, with the error and work counts.
 - **The source.** Every chart and table names the exact bench command for each side, the commit SHA of each side, the machine (cores, load average at the start), the run count and order, and the path to the per-run file. A reader reruns it from that.
 
-Inside berth, write the chart as a `berth.chart/v1` JSON (`"type": "bar"`, the before side in `"color": "muted"`, the command and SHAs in `notes`) and the runs as a CSV, outside the repo's tracked files, and register each with `berthd artifact add <file> --title "<metric>: before and after"` (see the **berth-artifacts** skill). For a hillclimb or a long run, rewrite the same files as runs land. Outside berth, publish them with the `Artifact` tool (load the **dataviz** and **artifact-design** skills first), or for a quick ballpark put a markdown table in the reply with the command under it.
+Make the chart and the runs an artifact the user can open, with the files kept outside the repo's tracked files. Draw the chart as a bar chart with the before side muted, and put the command and SHAs in its notes. Keep the runs as a CSV. See your adapter for how to publish an artifact. For a hillclimb or a long run, rewrite the same files as runs land. For a quick ballpark, put a markdown table in the reply with the command under it.
 
 ## Other perf material
 
-- Vet the **Perf issue** playbook's (`~/.claude/skills/shipit/playbooks/perf-issue.md`) baseline before the playbook plans from it, and every number after that.
-- Vet the **Hillclimb** playbook's (`~/.claude/skills/shipit/playbooks/hillclimb.md`) harness before it is frozen. The frozen harness then prints error and work counts, so each keep-or-revert checks questions 4 and 7 for free.
+- Vet the **Perf issue** playbook's (`<skills>/shipit/playbooks/perf-issue.md`) baseline before the playbook plans from it, and every number after that.
+- Vet the **Hillclimb** playbook's (`<skills>/shipit/playbooks/hillclimb.md`) harness before it is frozen. The frozen harness then prints error and work counts, so each keep-or-revert checks questions 4 and 7 for free.

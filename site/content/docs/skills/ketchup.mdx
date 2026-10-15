@@ -22,13 +22,13 @@ description: "Catches you up on what changed in this chat since your last messag
 <details className="ss-full">
 <summary>Full instructions (what the agent reads)</summary>
 
-Catch the user up on what changed in this chat since the last message they wrote before `/ketchup`. Notifications (`<task-notification>`, `<berth-notification>`) and subagent results are not their messages. Assume the user remembers their last message and nothing after it.
+Catch the user up on what changed in this chat since the last message they wrote before `/ketchup`. System notifications and helper reports are not their messages. Assume the user remembers their last message and nothing after it.
 
-Use the **bro** skill's voice ([`~/.claude/skills/bro/SKILL.md`](/skills/bro)), not its task: plain words, short sentences, no jargon, like one person catching up another. Say what changed for the user, not how you did it. Say "the tests pass", not "CI is green". Leave out hashes, file paths, commands, build numbers, and test counts unless the user needs one to act. Call each PR, branch, or agent by a name the user would know, not by a label you invented. If a fact needs context to make sense, give the context or leave the fact out.
+Use the **bro** skill's voice, not its task: plain words, short sentences, no jargon, like one person catching up another. Say what changed for the user, not how you did it. Say "the tests pass", not "CI is green". Leave out hashes, file paths, commands, build numbers, and test counts unless the user needs one to act. Call each PR, branch, or agent by a name the user would know, not by a label you invented. If a fact needs context to make sense, give the context or leave the fact out.
 
 ## Gather what changed
 
-Keep this turn read-only. Make artifacts only from what you already have: do not change code, start an app or a job, or post anything anyone else can see. Registering an artifact for the user (below) is fine. Collect your own work since that message, reports from subagents and berth tasks, and messages from anyone else in this chat. Check the current state of each PR, CI run, or agent this chat touched (`gh pr view`, `gh pr checks`, and the **berth** skill for agents on a box). Check each number you will show against the facts it comes from, and say so when you correct one.
+Keep this turn read-only. Make artifacts only from what you already have: do not change code, start an app or a job, or post anything anyone else can see. Registering an artifact for the user (below) is fine. Collect your own work since that message, reports from helpers, and messages from anyone else in this chat. Check the current state of each PR, CI run, or agent this chat touched (`gh pr view`, `gh pr checks`, and your orchestration tool for agents running elsewhere). Check each number you will show against the facts it comes from, and say so when you correct one.
 
 An action item is a decision or step only the user can take, such as a product choice, an approval, an irreversible action, or access you lack. Include any still waiting on the user, even one raised before their last message. Work you can still do yourself is not an action item. Never make up a call to fill the reply. A step the user did not ask for and the work does not need is not an action item, unless it is irreversible and waiting on the user: give it one action line, no artifact, and skip what happens if the user does not answer.
 
@@ -48,10 +48,10 @@ For a choice, lay the options out side by side: the current state beside each op
 
 Make an artifact only when there is data or a screen to show. Otherwise the sentences above are the whole reply.
 
-- **A visible change.** Show the screenshot or the visual diff you already have: a `berthd shots compare` result from the **berth-visual-diff** skill, a shot from **berth-browser**, or one from **claude-in-chrome**. Link the file or the artifact. If a visible change has no screenshot, say "No screenshot yet" in its sentence and what changed on screen. Never draw or describe a screen you did not capture as if you had.
-- **Numbers.** A before and after, a trend, or a pass and fail count becomes a chart or a table. Inside berth, use the **berth-artifacts** skill (a `berth.chart` JSON for numbers, a CSV for rows) and its card sits in the chat. Outside berth, use the `Artifact` tool (load **artifact-design**, and **dataviz** for a chart) when it is worth a page, else a markdown table of at most four rows.
+- **A visible change.** Show the screenshot or the visual diff you already have. Link the file or the artifact. If a visible change has no screenshot, say "No screenshot yet" in its sentence and what changed on screen. Never draw or describe a screen you did not capture as if you had.
+- **Numbers.** A before and after, a trend, or a pass and fail count becomes a chart or a table. Make an artifact (a chart for numbers, a table for rows) when it is worth a page, else a markdown table of at most four rows.
 - **A choice with weighed options.** When the options carry numbers or more than a line each, put the side-by-side in one small table artifact the same way. Otherwise a markdown table of the options in the reply.
-- **States and flows.** A Mermaid diagram (a `.mmd` artifact inside berth, a Mermaid block in the reply otherwise) only when the flow is the news.
+- **States and flows.** A Mermaid diagram (as an artifact, or a Mermaid block in the reply) only when the flow is the news.
 
 Keep each artifact small enough to read at a glance: at most six rows or boxes, at most eight words in each. Write labels as plain words a person would say, not tags like "Tests: pass". State where each number came from in the artifact's note or subtitle. Never invent a number. Link only artifacts that exist.
 

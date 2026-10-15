@@ -22,15 +22,15 @@ Only edit the verification skill's own directory (its SKILL.md, features/, and a
 
 ## Pass
 
-0. **Locate the target.** Find the verification skill to maintain: the project-local skill whose body has launch/drive sections and a feature map (usually `.claude/skills/verify-*/`). Several candidates → ask which one with `AskUserQuestion`. None → stop and point at `/create-verification-skill` instead of inventing a target.
+0. **Locate the target.** Find the verification skill to maintain: the project-local skill whose body has launch/drive sections and a feature map (usually `verify-*/` in the project's skills folder). Several candidates → ask the user which one. None → stop and point at `/create-verification-skill` instead of inventing a target.
 
 1. **Index hygiene.** Read the feature map README and glob its sibling files. Fix missing, extra, duplicate, or dead entries. Lightweight, no generated inventory.
 
-2. **Source wave.** One read-only subagent per feature file, at most 5 running at once (the router's cap, or the user's) with the rest queued: `Agent` calls with `subagent_type: "Explore"`, `model` from the `source readers` line of `~/.claude/shipit/models.md` (default `haiku`), `effort` per the Subagents section of the **shipit** skill (`~/.claude/skills/shipit/SKILL.md`). Each explains "how does this user-facing feature work?" from source, flags likely doc drift with citations, and returns one concise live-verification recipe. Children never drive the app and never edit files. Return shape: feature summary / source entry points / likely drift or none / one recipe. They notify when they finish. End your turn rather than polling.
+2. **Source wave.** One read-only helper per feature file, at most 5 running at once (the router's cap, or the user's) with the rest queued. Use the `source readers` model from the shipit models file and the effort the Helpers section of the **shipit** skill sets. Each explains "how does this user-facing feature work?" from source, flags likely doc drift with citations, and returns one concise live-verification recipe. Children never drive the app and never edit files. Return shape: feature summary / source entry points / likely drift or none / one recipe. End your turn after spawning them. The helpers report back when they finish.
 
 3. **Reconcile.** Every feature file has a returned summary. Merge overlapping recipes into as few app states as practical. Spot-check cited drift. Don't re-prove clean claims. Sweep recent churn (`git log` since the map's last change) for user-facing surfaces missing from the map. Require a concrete source path before calling one missing.
 
-4. **Live pass.** Required even when source looks clean. The coordinator owns all driving, through the harness the verification skill names (the **berth-browser** skill under berth, the project's Playwright, **claude-in-chrome**, or tmux for a CLI). Follow the verification skill's own launch model: one long-lived instance driven serially for servers and UIs, or a fresh isolated session per drive for short-lived CLIs (the skill's Launch section decides, not this one). Exercise every feature at least once, and hold three invariants the whole pass, whatever the failure:
+4. **Live pass.** Required even when source looks clean. The coordinator owns all driving, through the harness the verification skill names (a browser driver, the project's Playwright, or tmux for a CLI). Follow the verification skill's own launch model: one long-lived instance driven serially for servers and UIs, or a fresh isolated session per drive for short-lived CLIs (the skill's Launch section decides, not this one). Exercise every feature at least once, and hold three invariants the whole pass, whatever the failure:
    1. Never drive an instance you haven't health-checked since it last did something surprising. Doctor before first drive, doctor on each fresh session where sessions are the unit, doctor again after any failed drive. Where doctor can't see the failure (a wedged UI state on a healthy process), reset to a known state or relaunch rather than hoping.
    2. Evidence captured so far survives every cleanup, checked at its named location, not assumed.
    3. Nothing a drive started outlives that drive's usefulness. Failed-iteration residue is cleaned whether the session is stuck, exited, or shared (for a shared instance, clean the residue, not the instance).
@@ -39,12 +39,12 @@ Only edit the verification skill's own directory (its SKILL.md, features/, and a
 
 5. **Triage.** Wrong or missing user-POV description → doc drift, fix it. Working behavior the harness can't drive → harness gap, fix it. A harness fix follows the same helpers rule as generation (scripts executable, invocation documented in the skill body). App behavior that's actually broken → product gap. Record it for the user and keep it out of this PR.
 
-6. **Ship or stop.** For changed: one PR of proven corrections, through the Opening a PR playbook (`~/.claude/skills/shipit/playbooks/opening-a-pr.md`), with the live proof embedded. Re-read every changed file first. For clean or blocked: no PR, report the outcome and the coverage honestly.
+6. **Ship or stop.** For changed: one PR of proven corrections, through the Opening a PR playbook (`<skills>/shipit/playbooks/opening-a-pr.md`), with the live proof embedded. Re-read every changed file first. For clean or blocked: no PR, report the outcome and the coverage honestly.
 
 Keep concise run notes (features covered, unreachable prerequisites, confirmed drift, outcome) in a scratch location. Don't commit them.
 
 ## Coverage
 
-Show the pass as a table artifact, one row per feature: feature, source summary returned (yes/no), live result (`pass`, `fail`, `verified-unreachable`), drift found, proof path. Inside berth, a CSV registered with the **berth-artifacts** skill (a `status` column colours its rows). Outside berth, a markdown table in the reply. Name the run it came from.
+Show the pass as a table artifact, one row per feature: feature, source summary returned (yes/no), live result (`pass`, `fail`, `verified-unreachable`), drift found, proof path. An artifact if you can make one, such as a CSV with a `status` column, else a markdown table in the reply. Name the run it came from.
 
 **Reply:** the outcome, the coverage table, confirmed drift and what fixed it, product gaps for the user, and the PR link if one shipped.

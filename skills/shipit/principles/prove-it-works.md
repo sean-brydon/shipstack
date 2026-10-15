@@ -21,8 +21,8 @@ Keep the artifact visible for the human. Commit it only for large or complex wor
 
 Proof is something the user can see. "It works" in a reply is a self-report, the proxy this principle rules out. Hand over the observation itself.
 
-- **A page or a UI change needs a screenshot of the running build.** Inside berth, take it with the **berth-browser** skill on the worktree's own dev server, and run the **berth-visual-diff** skill for a before/after across phone, tablet, and desktop widths. The **berth-preview** skill opens the page next to the user's terminal. Without berth, use the **claude-in-chrome** skill, or the Playwright setup the project already has. Look at each screenshot before you hand it over.
-- **A number, a comparison, or a pass/fail matrix needs a table or a chart.** Inside berth, use the **berth-artifacts** skill (a berth.chart JSON, a CSV, or Markdown registered with `berthd artifact add`). Without berth, use the `Artifact` tool when the result is worth a page (load the **artifact-design** skill first, and the **dataviz** skill for any chart), else a markdown table in the reply.
+- **A page or a UI change needs a screenshot of the running build.** Drive the real surface on the worktree's own dev server and take screenshots, in light and dark. For a before/after, take a visual diff against main across phone, tablet, and desktop widths. If your environment can open the page next to the user, do that (see your adapter). The project's own Playwright setup works too. Look at each screenshot before you hand it over.
+- **A number, a comparison, or a pass/fail matrix needs a table or a chart.** Make it an artifact when the result is worth a page (a chart, a CSV, or Markdown the user can open; load the **dataviz** skill for any chart if your environment has it), else a markdown table in the reply.
 - **A CLI or a script needs the command and its real output.** Paste the command and the lines that show the result, not a paraphrase of them.
 - **Every table or chart names its source.** Give the command, the file, or the run that produced it, so the reader can rerun it.
 

@@ -1,6 +1,6 @@
 # Review-bot triage
 
-Use this reference when the Babysit playbook (`~/.claude/skills/shipit/playbooks/babysit.md`) handles review-bot comments, or when you run Claude Code's `/code-review` on your own diff. "Review bot" means any automated reviewer: a PR bot (Bugbot, CodeRabbit, Copilot review, a Claude review action, an agentic security review) or the findings `/code-review` prints in the session. The goal is not to ignore review bots by default. The goal is to stop treating every comment as a required code change.
+Use this reference when the Babysit playbook (`playbooks/babysit.md` in the shipit skill) handles review-bot comments, or when you run your agent's review pass on your own diff (your adapter names it). "Review bot" means any automated reviewer: a PR bot (Bugbot, CodeRabbit, Copilot review, an agent's review action, an agentic security review) or the findings your agent's review pass prints in the session. The goal is not to ignore review bots by default. The goal is to stop treating every comment as a required code change.
 
 ## Posture
 
@@ -22,12 +22,12 @@ When in doubt, ask. Skipping a noisy code-quality comment is cheap. Skipping a r
 ## Where findings come from
 
 - **PR review bots.** Each finding is a thread. Read threads with `gh pr view <pr> --comments` and `gh api repos/<owner>/<repo>/pulls/<pr>/comments`. Reply with `gh api --method POST "repos/<owner>/<repo>/pulls/<pr>/comments/<comment-id>/replies" --input <payload.json>`, the reply body written into the JSON file as data. Push the fix wave before replying, so the reply cites the commit.
-- **`/code-review` in the session.** Findings arrive as a list, with no thread to resolve. Triage them the same way before touching code. Don't pass `--fix` until you have classified every finding, since it applies them all. `--comment` posts findings to the PR as inline comments, which makes them PR threads under the rules above. Record each verdict and its evidence in the triage table.
+- **Your agent's review pass in the session.** Findings arrive as a list, with no thread to resolve. Triage them the same way before touching code. If the pass can apply its findings itself, don't let it until you have classified every finding, since it applies them all. If it can post findings to the PR as inline comments, those become PR threads under the rules above. Record each verdict and its evidence in the triage table.
 - **Repeat passes.** Count passes per bot. From the third pass on, lean toward dismissing documented patterns, still escalating anything in the **Ask by default** list rather than dismissing it yourself. Prose-pinning tests are the exception (see the candidate below).
 
 ## The triage table
 
-Keep one row per finding: source (bot and pass), file and line, claim in one line, verdict (`fix`, `dismiss`, `ask`), evidence (the command run, the line cited, the commit), status. Past about 8 rows, make it an artifact. Inside berth, a CSV registered with the **berth-artifacts** skill (a `status` column colors its rows). Outside berth, a markdown table in the reply. The table is what the user reads instead of the threads.
+Keep one row per finding: source (bot and pass), file and line, claim in one line, verdict (`fix`, `dismiss`, `ask`), evidence (the command run, the line cited, the commit), status. Past about 8 rows, make it an artifact. Write a CSV with a `status` column and publish it the way your adapter says. Where your adapter has no artifacts, a markdown table in the reply. The table is what the user reads instead of the threads.
 
 ## Learned pattern format
 
