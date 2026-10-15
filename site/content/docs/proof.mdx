@@ -1,84 +1,24 @@
 ---
 title: Proof
-description: The proof pack. Evidence a reader can look at and believe, built before done and before any PR.
+description: The proof pack. Evidence sized to the change, built before done and before any PR.
 ---
 
-The proof pack is the evidence that a change works. It is for a reader who won't run anything: they look at it and believe the claim, or they see exactly where it falls short. `/shipit` builds it before it says done and before it opens a PR.
+**What it does.** Builds evidence a reader can look at and believe, sized to the change, before `/shipit` says done or opens a PR.
 
-## Size it to the change
+**Why.** "It compiles" and "tests pass" are inputs, not proof. A reader who runs nothing should see that it works, or exactly where it falls short.
 
 | change | proof |
 |---|---|
-| a nit: typo, copy, config value, comment, dependency bump | the one check that covers it, with its command and result |
-| backend: logic, API, data, CLI | the repo's checks plus one real run of the changed path (a test that hits it, a request and its response, a CLI run, a log line) |
-| anything that shows on a screen | screenshots in light and dark, and the visual diff |
-| a number | a chart of before and after with its command |
+| nit: typo, copy, config value, comment, dependency bump | the one check that covers it, with its command and result |
+| backend: logic, API, data, CLI | the repo's checks plus one real run of the changed path |
+| UI: anything that shows on a screen | light and dark screenshots of the real app, and the visual diff |
+| a number | a before and after chart, with its command |
 | docs only | the docs build, or the rendered page |
 
-A one-line Proof section is fine when one line is the honest proof. "Nothing to prove: README wording only" is fine too, when true. The point is that proof is stated on purpose.
-
-## What goes in it
-
-Every row that applies to the change goes in. A row that applies but can't be produced stays in the pack as a gap, with the reason.
-
-<Berth>
-
-| change touches | proof | how |
-|---|---|---|
-| any page or UI | screenshots in light and dark, of the real app, in the states that changed | **berth-browser** (`berthd browser`) |
-| UI, or a refactor that must not change UI | before and after across phone, tablet and desktop, with the visual diff | **berth-visual-diff** (`berthd shots compare`) |
-| a desktop or mobile app | the built app driven for real, with screenshots or a short recording | the project's verify skill |
-| a CLI or TUI | the command and its real output, or a tmux capture for a TUI | Bash, `tmux capture-pane -p` |
-| a number | a chart or table of before and after, with the command and how many runs | **benchmark-checklist** first, then **berth-artifacts** (berth.chart) |
-| a bug fix | the repro failing before and passing after, on the same surface | the test from **tdd**, or the screenshot pair |
-| any code | the checks the repo names, each with pass or fail and the command | `berthd exec <loc>/<wt> -- <cmd>` |
-
-The pack is collected in one **berth-artifacts** page that links the shots and charts.
-
-</Berth>
-
-<NoBerth>
-
-| change touches | proof | how |
-|---|---|---|
-| any page or UI | screenshots in light and dark, of the real app, in the states that changed | **claude-in-chrome**, else the project's Playwright |
-| UI, or a refactor that must not change UI | before and after across phone, tablet and desktop | paired screenshots side by side |
-| a desktop or mobile app | the built app driven for real, with screenshots or a short recording | the project's verify skill |
-| a CLI or TUI | the command and its real output, or a tmux capture for a TUI | Bash, `tmux capture-pane -p` |
-| a number | a chart or table of before and after, with the command and how many runs | **benchmark-checklist** first, then **dataviz** with the `Artifact` tool |
-| a bug fix | the repro failing before and passing after, on the same surface | the test from **tdd**, or the screenshot pair |
-| any code | the checks the repo names, each with pass or fail and the command | Bash |
-
-The pack is collected in one place: a page through the `Artifact` tool, or a markdown section in the reply.
-
-</NoBerth>
-
-`/create-verification-skill` makes a project verify skill when your app has none.
-
-## Rules
-
-- **Real artifact, not a proxy.** Screenshot the running app, not a story or a mock. Measure the real path, not a microbenchmark of a helper.
-- **Look at every shot before using it.** A screenshot of a spinner, an error page, the wrong theme or a cropped-off change is not proof. Retake it.
-- **Every item names its source.** The command, the URL and port, the commit. A reader can rerun it.
-- **Score UI against the bar.** UI proof includes the Design audit's last score: 8 out of 10 or better, or the honest number and why.
-- **Gaps are listed, not hidden.** "Not verified on Windows: no box available" is fine. Silence is not.
-
-## In the PR
-
-The PR body gets a **Proof** section: the screenshots embedded in light and dark, the visual-diff summary, charts as images or links, and a table of checks with their command and result. `gh` can't upload images, so they go on a `pr-assets` branch (one folder per PR, never merged) and are embedded by their GitHub URL. Screenshots don't go into the feature branch unless the repo does that.
-
-## Enforce it with a hook
-
-`skills/shipit/hooks/require-proof.py` is a Claude Code `PreToolUse` hook. It refuses `gh pr create` when the PR body has no `## Proof` section with something under it. One line is enough for a nit. It is off until you add it to `~/.claude/settings.json` under `hooks`:
+An opt-in `PreToolUse` hook refuses `gh pr create` when the PR body has no `## Proof` section. Add it to `~/.claude/settings.json` under `hooks`:
 
 ```json
 "PreToolUse": [
   { "matcher": "Bash", "hooks": [ { "type": "command", "command": "python3 -I ~/.claude/skills/shipit/hooks/require-proof.py" } ] }
 ]
-```
-
-Its test cases run with:
-
-```sh
-python3 -I skills/shipit/hooks/require-proof.test.py
 ```

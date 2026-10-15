@@ -3,7 +3,7 @@ title: A bug fix
 description: A discount is a cent off. The Bug fix playbook reproduces it, finds the root cause, fixes it and proves the fix on the real CLI.
 ---
 
-The demo app shows a 15% discount on $59.97 as $8.99. It should be $9.00. The prompt asks for a repro first, so `/shipit` routes to the [Bug fix](/playbooks/bug-fix) playbook.
+**Asked:** a 15% discount on $59.97 shows $8.99, not $9.00; repro first, then fix. Routed to [Bug fix](/playbooks/bug-fix).
 
 <Berth>
 <Run id="bugfix" />
@@ -15,8 +15,6 @@ The demo app shows a 15% discount on $59.97 as $8.99. It should be $9.00. The pr
 
 ## What to notice
 
-- **Repro first, as asked.** Both runs printed the example invoice and did the arithmetic (5997 cents times 15% is 899.55) before touching code. Both confirmed the subtotal was an exact 5997 cents, which ruled out a float error and left the rounding as the cause.
-- **A failing test, then the fix.** Both put the test in its own commit on a branch and the one-word fix (`Math.floor` to `Math.round`) on top. The plain run's test pins all four totals. The berth run's test checks only the discount and the total.
-- **It read only the principles it cited.** Fix Root Causes, Sequence Work into Verifiable Units and Test Behavior, Not Implementation, then named each one with the choice it changed.
-- **No todo list.** Headless `claude -p` has no todo tool, so neither run opened the playbook's checklist the way the skill asks. The skipped steps show up in the reply instead, each with a reason.
-- **Small and cheap.** No subagents and no `/how` for a one-function fix: $0.40 and under a minute each. Both left the "Totall" typo alone to keep the change focused, and the berth run flagged a real rounding-policy decision for you.
+- **Repro first.** Both runs printed the invoice and did the arithmetic (899.55 cents) before touching code, which ruled out a float error.
+- **A failing test, then the fix.** The test in its own commit, then `Math.floor` to `Math.round` on top. No subagents: $0.40 and under a minute each.
+- **No todo list.** Headless `claude -p` has no todo tool, so the skipped steps are listed in the reply, each with a reason.

@@ -255,31 +255,29 @@ export async function Run({ id }: { id: string }) {
 }
 
 // The runs index: one row per recording, its numbers read from the run file.
-export async function RunTable({ runs }: { runs: { id: string; href: string; label: string }[] }) {
+export async function RunTable({ runs }: { runs: { id: string; href: string; label: string; asked: string }[] }) {
   const rows = await Promise.all(runs.map(async (r) => ({ ...r, run: await loadRun(r.id) })));
   return (
     <table>
       <thead>
         <tr>
           <th>run</th>
-          <th>command</th>
-          <th>environment</th>
-          <th>duration</th>
+          <th>what was asked</th>
+          <th>playbook</th>
+          <th>time</th>
           <th>cost</th>
-          <th>turns</th>
         </tr>
       </thead>
       <tbody>
-        {rows.map(({ id, href, label, run }) => (
+        {rows.map(({ id, href, label, asked, run }) => (
           <tr key={id}>
             <td>
               <a href={href}>{label}</a>
             </td>
-            <td>{run?.command ? <code>{run.command}</code> : null}</td>
-            <td>{run ? (run.berth ? 'with berth' : 'without berth') : 'not recorded'}</td>
+            <td>{asked}</td>
+            <td>{run?.playbook ?? (run?.command ? <code>{run.command}</code> : null)}</td>
             <td>{duration(run?.duration_s)}</td>
             <td>{run?.cost_usd !== undefined ? `$${run.cost_usd.toFixed(2)}` : null}</td>
-            <td>{run?.turns}</td>
           </tr>
         ))}
       </tbody>

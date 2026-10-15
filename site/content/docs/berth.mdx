@@ -3,51 +3,18 @@ title: berth
 description: What berth (Shipyard) adds to shipstack, and what every step does without it.
 ---
 
-[berth](https://github.com/cosscom/shipyard), also called Shipyard, runs coding agents on your own machines. shipstack is built for it and never requires it. Every step that uses berth has a plain Claude Code fallback in the same sentence or the next.
+**What it does.** [berth](https://github.com/cosscom/shipyard) (Shipyard) runs coding agents on your own machines. shipstack uses it when it finds a `BERTH_*` variable, `berthd` or `berth` on the `PATH`, or the `mcp__berth__*` tools.
 
-The switch in the sidebar shows the examples on every page with berth or without it. It changes only what you read, not what the skills do. They detect berth on their own.
-
-## How it's detected
-
-At the start of every task `/shipit` looks for any of these:
-
-- a `BERTH_*` environment variable
-- `berthd` or `berth` on the `PATH`
-- the `mcp__berth__*` tools in the session
-
-`/setup-shipit` runs the same check and tells you what it found. berth needs no line in `models.md`.
-
-## What it adds
+**Why.** Parallel attempts need their own worktree, port and environment, and long work needs a box that outlives your laptop. Every berth step has a plain Claude Code fallback, so berth is never required.
 
 | step | with berth | without berth |
 |---|---|---|
-| Parallel attempts (arena runners, prototypes, code delegates) | a berth task per attempt, with its own worktree, port and environment, via **berth-orchestrate** | an Agent tool subagent with `isolation: "worktree"` |
-| Knowing a delegate finished | a `<berth-notification>` when it ends or needs you | the Agent tool's completion notice |
-| Driving a page to repro or prove | **berth-browser**, headless, on the worktree's own dev server | **claude-in-chrome**, or the project's Playwright |
-| Before and after screenshots | **berth-visual-diff** across phone, tablet and desktop, with a slider and a heatmap | paired screenshots from Playwright or claude-in-chrome |
-| Showing you the running page | **berth-preview**, beside the chat | a local URL in the reply |
-| Numbers, tables, plans, decision logs | **berth-artifacts**, a card in Shipyard that updates live | the `Artifact` tool, or a markdown table |
-| Checks in a worktree | `berthd exec <loc>/<wt> -- <cmd>` | Bash in that worktree |
-| Turning a lesson into a gate | **berth-hooks**: a `before:` hook that can refuse an action | Claude Code hooks in `settings.json` |
-| Work that outlives your laptop | a berth task on a box keeps going | the session has to stay open |
-| A second vendor in a panel | a berth task with `--agent codex` | `codex exec` read-only in Bash |
+| parallel attempts and code delegates | a berth task each, with its own worktree, port and env | an Agent subagent with `isolation: "worktree"` |
+| knowing a delegate finished | a `<berth-notification>` | the Agent tool's completion notice |
+| driving a page | **berth-browser** on the worktree's dev server | **claude-in-chrome** or the project's Playwright |
+| before and after screenshots | **berth-visual-diff**, phone to desktop, with a heatmap | paired screenshots |
+| numbers, tables, plans | **berth-artifacts**, live in Shipyard | the `Artifact` tool or a markdown table |
+| a second vendor in a panel | a berth task with `--agent codex` | `codex exec`, read-only |
+| work that outlives your laptop | a berth task on a box | the session stays open |
 
-## Where it shows up
-
-<Berth>
-- **Arena and prototypes.** Each runner or variant is a berth task. The lead ends its turn and waits for the notifications.
-- **Bug fixes.** The repro is driven with `berthd browser`, and the fix is checked with `berthd shots compare` so you see the before and after.
-- **Shipping.** Each verifier is its own berth task with the PR checked out in its own worktree.
-- **Results.** Hillclimb logs, hypothesis tables and plans land as artifacts in Shipyard, rewritten as rows arrive.
-</Berth>
-
-<NoBerth>
-- **Arena and prototypes.** Each runner or variant is a subagent with `isolation: "worktree"`. The lead ends its turn and waits for the completion notices.
-- **Bug fixes.** The repro is driven with the claude-in-chrome skill or the project's Playwright, and the fix gets a screenshot pair at the same size and state.
-- **Shipping.** Each verifier is a subagent in a detached checkout of the PR's head.
-- **Results.** Hillclimb logs, hypothesis tables and plans go out as a page through the `Artifact` tool, or a markdown table in the reply.
-</NoBerth>
-
-## Many tasks on a box
-
-berth is where parallel work scales. A laptop runs a handful of worktrees at once. A box runs more, keeps running when your laptop is closed, and Shipyard shows every agent, its status, and the ones waiting on you. Start your prompts with `/shipit`, and the agents it hands work to follow the playbooks too. The fan-out cap of 5 at once still applies unless you set another.
+The switch in the sidebar shows every page's examples with or without berth. It changes what you read, not what the skills do.

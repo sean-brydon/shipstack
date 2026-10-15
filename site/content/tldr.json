@@ -1,0 +1,457 @@
+{
+  "skills": {
+    "shipit": {
+      "group": "Setup and help",
+      "invoke": "type",
+      "tier": "varies",
+      "what": "Routes a task to the playbook for its kind, runs it with subagents and the other skills, and stops only when there is proof.",
+      "use": "Any real task: a bug, a feature, a PR to land, a question about the code.",
+      "skip": "You already know the one skill you want. Type that one.",
+      "prompt": "/shipit the csv export drops its last row. repro first, then fix and verify.",
+      "get": "The work, a proof pack sized to the change, and a cost receipt when subagents ran.",
+      "where": "It is the router"
+    },
+    "setup-shipit": {
+      "group": "Setup and help",
+      "invoke": "model",
+      "tier": "light",
+      "what": "Picks the model per role and the effort budget, and detects codex and berth.",
+      "use": "First install, or when you want to trade cost against quality.",
+      "skip": "",
+      "prompt": "/setup-shipit",
+      "get": "~/.claude/shipit/models.md.",
+      "where": "Type it"
+    },
+    "shipit-help": {
+      "group": "Setup and help",
+      "invoke": "type",
+      "tier": "light",
+      "what": "Tells you which skill or playbook fits, and hands you a prompt to send.",
+      "use": "You're not sure what to use.",
+      "skip": "",
+      "prompt": "/shipit-help which skill should I use to review this branch?",
+      "get": "An answer and a prompt to copy. It doesn't start the work.",
+      "where": "Type it"
+    },
+    "how": {
+      "group": "Understand",
+      "invoke": "type",
+      "tier": "medium",
+      "what": "Explains how a subsystem works at runtime: the pieces, the flow, where things live, the gotchas.",
+      "use": "Before changing code you don't know. \"Where should this live\" or \"which package owns this\".",
+      "skip": "You want the history or the reason (use why). One function you can just read.",
+      "prompt": "/how does the laptop proxy get a request to a dev server on a box?",
+      "get": "Overview, step-by-step flow with file:line, gotchas, and a Mermaid diagram (a berth artifact in Shipyard).",
+      "where": "Feature step 1, Investigation, Bug fix"
+    },
+    "why": {
+      "group": "Understand",
+      "invoke": "type",
+      "tier": "medium",
+      "what": "Finds why something is the way it is, from every source it can reach: git history, tickets, docs, chat, logs, error tracking, analytics.",
+      "use": "Design rationale, \"when did this start\" regressions, a threshold someone picked, before changing something that looks wrong.",
+      "skip": "Runtime behavior (use how).",
+      "prompt": "/why does shots compare fall back to turn-start instead of failing?",
+      "get": "A cited answer with confidence tiers, an evidence timeline, and a sources-consulted table.",
+      "where": "Investigation, Bug fix"
+    },
+    "teach": {
+      "group": "Understand",
+      "invoke": "type",
+      "tier": "heavy",
+      "what": "Runs how and why together and weaves them into one plain explanation, built up diagram by diagram.",
+      "use": "You want to really understand a change or subsystem: onboarding, a big PR you didn't write.",
+      "skip": "A quick answer (use how).",
+      "prompt": "/teach me how berth notifications get back to the agent that started the work",
+      "get": "One layered explanation with diagrams you can come back to.",
+      "where": "Type it"
+    },
+    "recall": {
+      "group": "Understand",
+      "invoke": "type",
+      "tier": "light",
+      "what": "Rebuilds your recent context on a topic from your own transcripts, project memory, live state and past fixes.",
+      "use": "Starting or resuming work. \"Where did I leave off on X?\"",
+      "skip": "Catching up on this chat only (use ketchup).",
+      "prompt": "/recall my work on phone pairing this week",
+      "get": "A short current-state brief: done, open, decided, next.",
+      "where": "Session pickup"
+    },
+    "ketchup": {
+      "group": "Understand",
+      "invoke": "type",
+      "tier": "light",
+      "what": "Catches you up on what changed in this chat since your last message.",
+      "use": "After a long background stretch, or when several agents reported while you were away.",
+      "skip": "Across chats or days (use recall).",
+      "prompt": "/ketchup",
+      "get": "A few plain sentences, each action item with enough context to decide, and an artifact only when there's data or a screen.",
+      "where": "Type it"
+    },
+    "in-your-own-words": {
+      "group": "Understand",
+      "invoke": "type",
+      "tier": "light",
+      "what": "Plays back your goal and the real problem before any work starts.",
+      "use": "A long or messy ask, and you want to check the agent got it before it builds.",
+      "skip": "A clear, small task.",
+      "prompt": "/in-your-own-words <paste the thread>",
+      "get": "A short restatement you can correct.",
+      "where": "Type it"
+    },
+    "sharpen": {
+      "group": "Understand",
+      "invoke": "type",
+      "tier": "light",
+      "what": "Reframes a task the way a top expert would approach it, aimed at what you're after, without over-specifying.",
+      "use": "Before a big ask you're not sure how to phrase.",
+      "skip": "You already know exactly what you want.",
+      "prompt": "/sharpen I want agents to report back better from worktrees",
+      "get": "The sharpened task, and what it deliberately leaves to you.",
+      "where": "Type it"
+    },
+    "bro": {
+      "group": "Understand",
+      "invoke": "type",
+      "tier": "light",
+      "what": "Restates the last reply in plain words, no jargon.",
+      "use": "The last answer was dense.",
+      "skip": "",
+      "prompt": "/bro",
+      "get": "The same content, readable.",
+      "where": "Type it"
+    },
+    "architect": {
+      "group": "Design and review",
+      "invoke": "type",
+      "tier": "medium",
+      "what": "Settles types, signatures and module shape before code, with parallel designs, then stays in the loop while code fills in.",
+      "use": "Code that crosses a function boundary, a new module or API, or anywhere jumping to code would lock in the wrong shape.",
+      "skip": "A one-file fix.",
+      "prompt": "/architect a notification inbox that survives box restarts",
+      "get": "Rationale, module map, red flags, and the chosen signatures, at a checkpoint before code.",
+      "where": "Feature step 2"
+    },
+    "arena": {
+      "group": "Design and review",
+      "invoke": "type",
+      "tier": "heavy",
+      "what": "Runs several attempts at the same thing in separate worktrees, picks the best as a base, and grafts in the best parts of the others.",
+      "use": "Several valid shapes and you can't tell which is best until you see them. A second opinion on an approach.",
+      "skip": "There's one obvious answer.",
+      "prompt": "/arena take my prompt to the arena verbatim and compare their proposals with yours",
+      "get": "A runners × criteria table, a diff summary per attempt, and the grafted result.",
+      "where": "Feature, when the code has several valid shapes"
+    },
+    "swarm": {
+      "group": "Design and review",
+      "invoke": "type",
+      "tier": "heavy",
+      "what": "Fans out workers across slices or races, five at a time, and returns one report with a coverage table.",
+      "use": "The same check across many packages or pages. Racing hypotheses. Broad exploration.",
+      "skip": "A design bakeoff (use arena).",
+      "prompt": "/swarm check every package under internal/ with go vet and its tests. one worker per package. one report.",
+      "get": "A coverage table (live in Shipyard) and the combined findings.",
+      "where": "Visual parity, Research"
+    },
+    "interrogate": {
+      "group": "Design and review",
+      "invoke": "type",
+      "tier": "heavy",
+      "what": "Reviewers on different model families attack a diff from separate angles, then a lead sorts real findings from noise.",
+      "use": "Before shipping a contested design or a risky diff. \"Tear this apart.\"",
+      "skip": "A small, obvious change.",
+      "prompt": "/interrogate the whole branch, skeptically. no nitpicks unless it's a real bug.",
+      "get": "A findings × reviewers table and a verdict: kept, dismissed, and why.",
+      "where": "Feature step 7 when contested, Opening a PR"
+    },
+    "blast-radius": {
+      "group": "Design and review",
+      "invoke": "type",
+      "tier": "medium",
+      "what": "Finds what a small-looking change could break elsewhere, and proves the one fact it's safe because of by running code.",
+      "use": "A small diff you don't trust. A change to a shared helper.",
+      "skip": "A big change (use interrogate).",
+      "prompt": "what's the blast radius of making worktreeURL read the proxy port?",
+      "get": "A risks and cleared table, showing how far each item was proven.",
+      "where": "Type it"
+    },
+    "tdd": {
+      "group": "Build and clean",
+      "invoke": "type",
+      "tier": "light",
+      "what": "Writes the failing test first, then the fix.",
+      "use": "You ask for TDD or a regression test, or the bug has an obvious cheap local test.",
+      "skip": "The test path is unclear, slow or integration-heavy.",
+      "prompt": "/tdd the shots compare page-removal case",
+      "get": "A red test, the fix, and the green run.",
+      "where": "Bug fix"
+    },
+    "benchmark-checklist": {
+      "group": "Build and clean",
+      "invoke": "type",
+      "tier": "light",
+      "what": "Vets a number you measured (what limits it, errors, repeat runs, relevance) before you trust or report it.",
+      "use": "Any speedup or regression you measured yourself.",
+      "skip": "",
+      "prompt": "/benchmark-checklist shots compare went from 7s to 4s",
+      "get": "A chart or table with every run, the spread, the limiter and the source command.",
+      "where": "Perf issue, Hillclimb"
+    },
+    "no-comments": {
+      "group": "Build and clean",
+      "invoke": "type",
+      "tier": "light",
+      "what": "Strips comments before review. A read-only reviewer flags them, the accepted ones go, and claimed constraints get turned into checks instead.",
+      "use": "Right before a review or PR.",
+      "skip": "",
+      "prompt": "/no-comments",
+      "get": "A diff with only the comments that explain why, plus offers to encode the rest.",
+      "where": "Opening a PR"
+    },
+    "unslop": {
+      "group": "Build and clean",
+      "invoke": "type",
+      "tier": "light",
+      "what": "Removes AI tells from writing.",
+      "use": "PR descriptions, docs, release notes, messages.",
+      "skip": "",
+      "prompt": "can we unslop the README changes?",
+      "get": "The same text, cleaner.",
+      "where": "Every reply and PR"
+    },
+    "technical-writing": {
+      "group": "Build and clean",
+      "invoke": "type",
+      "tier": "light",
+      "what": "A layered standard for docs, RFCs, READMEs, PR descriptions and commits.",
+      "use": "Writing anything another person reads in order to do something.",
+      "skip": "",
+      "prompt": "/technical-writing review the Unreleased section of the changelog",
+      "get": "A rewrite against the standard, with the changes named.",
+      "where": "Opening a PR"
+    },
+    "typescript-best-practices": {
+      "group": "Build and clean",
+      "invoke": "auto",
+      "tier": "light",
+      "what": "Type-system discipline in TypeScript syntax: illegal states unrepresentable, parse at the edges.",
+      "use": "Loads itself when Claude reads or edits .ts or .tsx files.",
+      "skip": "",
+      "prompt": "(automatic)",
+      "get": "Stricter types in the code it writes.",
+      "where": "Any TypeScript edit"
+    },
+    "show-me-your-work": {
+      "group": "Long runs",
+      "invoke": "type",
+      "tier": "light",
+      "what": "Keeps a decision log for long or unattended work: one row per decision with what, why, evidence and result.",
+      "use": "Overnight runs, multi-phase work, anything you'll review later.",
+      "skip": "Short interactive tasks.",
+      "prompt": "/show-me-your-work keep a decision trail I can review when I'm back",
+      "get": "decisions.tsv, shown live as a table in Shipyard.",
+      "where": "Autonomous run"
+    },
+    "figure-it-out": {
+      "group": "Long runs",
+      "invoke": "type",
+      "tier": "heavy",
+      "what": "Designs a custom, auditable playbook when none of the bundled ones fit.",
+      "use": "Big migrations, ambitious multi-part changes, work you'll trust after stepping away.",
+      "skip": "A task one playbook already covers.",
+      "prompt": "/figure-it-out move every caller from the sync store to the async one, behavior identical",
+      "get": "A framing artifact, a hypothesis loop, and a live decision log.",
+      "where": "Large or cross-cutting tasks"
+    },
+    "reflect": {
+      "group": "Improve the stack",
+      "invoke": "type",
+      "tier": "medium",
+      "what": "Three reviewers read this chat and turn what was learned into concrete edits to existing skills.",
+      "use": "After a long task landed, or one that took too long.",
+      "skip": "",
+      "prompt": "/reflect that took too long. capture what we learned.",
+      "get": "Proposed skill edits for you to approve.",
+      "where": "Type it"
+    },
+    "correct": {
+      "group": "Improve the stack",
+      "invoke": "type",
+      "tier": "medium",
+      "what": "Finds mistakes agents keep repeating and makes each impossible: architecture, then types, then a lint or hook, then a test, docs last.",
+      "use": "The same correction has landed twice.",
+      "skip": "A one-off mistake.",
+      "prompt": "/correct",
+      "get": "A rule → enforcer table, each check proven to fail on a real past mistake.",
+      "where": "Type it"
+    },
+    "automate-me": {
+      "group": "Improve the stack",
+      "invoke": "type",
+      "tier": "medium",
+      "what": "Drafts your own -mode skill from your transcripts and memory, routing through shipit.",
+      "use": "You want agents to work your way by default.",
+      "skip": "",
+      "prompt": "/automate-me",
+      "get": "A draft of ~/.claude/skills/<you>-mode/SKILL.md.",
+      "where": "Type it"
+    },
+    "create-verification-skill": {
+      "group": "Improve the stack",
+      "invoke": "type",
+      "tier": "medium",
+      "what": "Generates a project-local verify skill that drives your app like a user and saves proof a PR can embed.",
+      "use": "A project has no scripted way to prove UI, CLI or service behavior.",
+      "skip": "",
+      "prompt": "/create-verification-skill for the Shipyard app",
+      "get": "A .claude/skills/verify-<app>/ skill with a feature map.",
+      "where": "setup-shipit offers it"
+    },
+    "maintain-verification-skill": {
+      "group": "Improve the stack",
+      "invoke": "type",
+      "tier": "heavy",
+      "what": "Keeps the verify skill honest: parallel source readers, one live pass over every feature, at most one PR of proven fixes.",
+      "use": "Every so often, or when the verify skill feels stale.",
+      "skip": "",
+      "prompt": "/maintain-verification-skill",
+      "get": "A coverage table per feature and at most one PR.",
+      "where": "Type it"
+    }
+  },
+  "playbooks": {
+    "ideation": {
+      "group": "Thinking",
+      "name": "Ideation",
+      "what": "Lays out real options with a recommendation, then stops for your pick. No code, no branch.",
+      "say": "\"I want to…\", \"what if we…\", \"help me plan\", \"no code\""
+    },
+    "investigation": {
+      "group": "Thinking",
+      "name": "Investigation",
+      "what": "Answers a read-only question (how X works, why Y was built this way) from the code and its history. Changes nothing.",
+      "say": "\"how does X work\", \"why was Y built this way\", \"are we sure\", \"don't change any code\""
+    },
+    "research": {
+      "group": "Thinking",
+      "name": "Research",
+      "what": "Scores how other products do X in a matrix with sources, a steal list and a recommendation. No code in your repo.",
+      "say": "\"how do other tools do X\", \"audit competitors\""
+    },
+    "feature": {
+      "group": "Building",
+      "name": "Feature",
+      "what": "Builds new or changed behavior from a named data shape. Subagents write the code; the lead owns design, review and proof.",
+      "say": "\"add …\", \"build …\""
+    },
+    "bug-fix": {
+      "group": "Building",
+      "name": "Bug fix",
+      "what": "Reproduces a reported defect, finds the root cause, fixes it and proves the fix with runtime evidence.",
+      "say": "\"… is broken\", \"repro first, then fix\""
+    },
+    "refactoring": {
+      "group": "Building",
+      "name": "Refactoring",
+      "what": "Changes the structure of code while its behavior stays identical.",
+      "say": "\"move/extract/rename …\", \"zero behavior change\""
+    },
+    "prototype": {
+      "group": "Building",
+      "name": "Prototype",
+      "what": "Builds a throwaway sketch to settle a design or behavior question cheaply. The real build follows Feature.",
+      "say": "\"mock it up\", \"try a few layouts\", \"sketch it to decide\""
+    },
+    "design-audit": {
+      "group": "Building",
+      "name": "Design audit",
+      "what": "Audits UI against the design system and iterates until every axis scores 8/10 or better, proven by light and dark screenshots.",
+      "say": "\"get this UI to 8/10\", \"audit the design\""
+    },
+    "visual-parity": {
+      "group": "Building",
+      "name": "Visual parity",
+      "what": "Makes two UIs match pixel for pixel, checked by image diff. The baseline is the spec and is never touched.",
+      "say": "\"match this pixel for pixel\", \"migrate the styling\""
+    },
+    "perf-issue": {
+      "group": "Measuring",
+      "name": "Perf issue",
+      "what": "Traces a measured slowness and improves it against a baseline. Every fix is tied to a measurement.",
+      "say": "\"… is slow\", \"trace it\""
+    },
+    "hillclimb": {
+      "group": "Measuring",
+      "name": "Hillclimb",
+      "what": "Improves one metric toward a target in a loop: one hypothesis at a time, before and after for each, one commit per accepted win.",
+      "say": "\"keep improving X until it hits Y\""
+    },
+    "runtime-forensics": {
+      "group": "Measuring",
+      "name": "Runtime forensics",
+      "what": "Diagnoses a live symptom (leak, idle CPU, glitch) by instrumenting the running process. The deliverable is a cited diagnosis, not a fix.",
+      "say": "\"memory leak\", \"idle CPU\", \"it glitches every few seconds\""
+    },
+    "trace-forensics": {
+      "group": "Measuring",
+      "name": "Trace forensics",
+      "what": "Diagnoses a captured profile, trace or heap snapshot. The deliverable is a diagnosis.",
+      "say": "\"here's a profile / trace / heap snapshot\""
+    },
+    "eval": {
+      "group": "Measuring",
+      "name": "Eval",
+      "what": "Runs a blind experiment to test whether a skill, structure or prompt change helps, before it is promoted.",
+      "say": "\"did this skill change actually help?\""
+    },
+    "opening-a-pr": {
+      "group": "Delivering",
+      "name": "Opening a PR",
+      "what": "Opens the PR at the end of every build playbook. Requires the proof pack.",
+      "say": "\"open the PR\" (also ends every build playbook)"
+    },
+    "babysit": {
+      "group": "Delivering",
+      "name": "Babysit",
+      "what": "Drives a PR to merge-ready (conflicts, review threads, CI) and stops where your call begins.",
+      "say": "\"check on PR 123\", \"get it green\", \"anything outstanding?\""
+    },
+    "shipping": {
+      "group": "Delivering",
+      "name": "Shipping",
+      "what": "Verifies each green PR independently, then lands only the verified ones.",
+      "say": "\"land it\", \"merge the verified ones\""
+    },
+    "autonomous-run": {
+      "group": "Running long",
+      "name": "Autonomous run",
+      "what": "Drives a long task to a defined done check without stopping.",
+      "say": "\"I'm going to bed\", \"loop until done\""
+    },
+    "session-pickup": {
+      "group": "Running long",
+      "name": "Session pickup",
+      "what": "Resumes or takes over another agent's in-flight work from its trail, without redoing it.",
+      "say": "\"take over this branch\""
+    },
+    "pause-safely": {
+      "group": "Running long",
+      "name": "Pause safely",
+      "what": "Stops in-flight work cleanly and leaves a checkpoint a fresh agent can resume from.",
+      "say": "\"pause, I need to restart\""
+    },
+    "authoring-a-skill": {
+      "group": "Housekeeping",
+      "name": "Authoring a skill",
+      "what": "Writes or edits a SKILL.md.",
+      "say": "\"write a skill for …\""
+    },
+    "worktree-cleanup": {
+      "group": "Housekeeping",
+      "name": "Worktree cleanup",
+      "what": "Reclaims disk by pruning merged or abandoned worktrees, after checking no live chat still uses them.",
+      "say": "\"free up disk\", \"prune old worktrees\""
+    }
+  }
+}

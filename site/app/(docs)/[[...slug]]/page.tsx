@@ -1,5 +1,5 @@
 import { source } from '@/lib/source';
-import { DocsBody, DocsDescription, DocsPage, DocsTitle, EditOnGitHub } from 'fumadocs-ui/layouts/docs/page';
+import { DocsBody, DocsPage, DocsTitle, EditOnGitHub } from 'fumadocs-ui/layouts/docs/page';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { createRelativeLink } from 'fumadocs-ui/mdx';
@@ -17,11 +17,14 @@ export default async function Page(props: PageProps<'/[[...slug]]'>) {
   const MDX = page.data.body;
   const home = page.slugs.length === 0;
   const eyebrow = home ? 'Documentation' : sectionTitle(page.slugs);
+  // Generated pages fold the agent's full text under a TLDR, so their
+  // headings stay out of the table of contents. Every page opens with its
+  // own "what it does" line, so the description is metadata only.
   const fromRepo = generated.has(page.slugs[0]) && page.slugs.length > 1;
 
   return (
     <DocsPage
-      toc={page.data.toc}
+      toc={fromRepo ? [] : page.data.toc}
       full={page.data.full}
       breadcrumb={{ enabled: false }}
       footer={{ children: <PageFoot /> }}
@@ -29,7 +32,6 @@ export default async function Page(props: PageProps<'/[[...slug]]'>) {
       <header className="ss-page-head" data-home={home || undefined} data-section={page.slugs[0]}>
         {eyebrow && <p className="ss-eyebrow">{eyebrow}</p>}
         <DocsTitle>{home ? 'shipstack' : page.data.title}</DocsTitle>
-        <DocsDescription>{page.data.description}</DocsDescription>
       </header>
       <DocsBody>
         <MDX components={getMDXComponents({ a: createRelativeLink(source, page) })} />

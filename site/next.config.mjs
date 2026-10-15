@@ -13,6 +13,10 @@ const config = {
   reactStrictMode: true,
   turbopack: { root },
   outputFileTracingRoot: root,
+  // The Benefits page was folded into the introduction.
+  async redirects() {
+    return [{ source: '/benefits', destination: '/', permanent: true }];
+  },
 };
 
 export default withMDX(config);

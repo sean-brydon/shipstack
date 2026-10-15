@@ -1,0 +1,60 @@
+---
+title: "Playbooks"
+description: "The 22 playbooks /shipit routes tasks to."
+---
+
+**What it is.** The checklist `/shipit` follows for one kind of task. You describe the task; it picks the playbook and copies the steps into its todo list.
+
+**Why.** The same kind of task gets the same steps every time, and a skipped step shows as `skip: <reason>`.
+
+## Thinking
+
+| playbook | what it does |
+|---|---|
+| [Ideation](/playbooks/ideation) | Lays out real options with a recommendation, then stops for your pick. No code, no branch. |
+| [Investigation](/playbooks/investigation) | Answers a read-only question (how X works, why Y was built this way) from the code and its history. Changes nothing. |
+| [Research](/playbooks/research) | Scores how other products do X in a matrix with sources, a steal list and a recommendation. No code in your repo. |
+
+## Building
+
+| playbook | what it does |
+|---|---|
+| [Feature](/playbooks/feature) | Builds new or changed behavior from a named data shape. Subagents write the code; the lead owns design, review and proof. |
+| [Bug fix](/playbooks/bug-fix) | Reproduces a reported defect, finds the root cause, fixes it and proves the fix with runtime evidence. |
+| [Refactoring](/playbooks/refactoring) | Changes the structure of code while its behavior stays identical. |
+| [Prototype](/playbooks/prototype) | Builds a throwaway sketch to settle a design or behavior question cheaply. The real build follows Feature. |
+| [Design audit](/playbooks/design-audit) | Audits UI against the design system and iterates until every axis scores 8/10 or better, proven by light and dark screenshots. |
+| [Visual parity](/playbooks/visual-parity) | Makes two UIs match pixel for pixel, checked by image diff. The baseline is the spec and is never touched. |
+
+## Measuring
+
+| playbook | what it does |
+|---|---|
+| [Perf issue](/playbooks/perf-issue) | Traces a measured slowness and improves it against a baseline. Every fix is tied to a measurement. |
+| [Hillclimb](/playbooks/hillclimb) | Improves one metric toward a target in a loop: one hypothesis at a time, before and after for each, one commit per accepted win. |
+| [Runtime forensics](/playbooks/runtime-forensics) | Diagnoses a live symptom (leak, idle CPU, glitch) by instrumenting the running process. The deliverable is a cited diagnosis, not a fix. |
+| [Trace forensics](/playbooks/trace-forensics) | Diagnoses a captured profile, trace or heap snapshot. The deliverable is a diagnosis. |
+| [Eval](/playbooks/eval) | Runs a blind experiment to test whether a skill, structure or prompt change helps, before it is promoted. |
+
+## Delivering
+
+| playbook | what it does |
+|---|---|
+| [Opening a PR](/playbooks/opening-a-pr) | Opens the PR at the end of every build playbook. Requires the proof pack. |
+| [Babysit](/playbooks/babysit) | Drives a PR to merge-ready (conflicts, review threads, CI) and stops where your call begins. |
+| [Shipping](/playbooks/shipping) | Verifies each green PR independently, then lands only the verified ones. |
+
+## Running long
+
+| playbook | what it does |
+|---|---|
+| [Autonomous run](/playbooks/autonomous-run) | Drives a long task to a defined done check without stopping. |
+| [Session pickup](/playbooks/session-pickup) | Resumes or takes over another agent's in-flight work from its trail, without redoing it. |
+| [Pause safely](/playbooks/pause-safely) | Stops in-flight work cleanly and leaves a checkpoint a fresh agent can resume from. |
+
+## Housekeeping
+
+| playbook | what it does |
+|---|---|
+| [Authoring or modifying a skill](/playbooks/authoring-a-skill) | Writes or edits a SKILL.md. |
+| [Worktree and simulator cleanup](/playbooks/worktree-cleanup) | Reclaims disk by pruning merged or abandoned worktrees, after checking no live chat still uses them. |

@@ -2,7 +2,7 @@
   "title": "Skills",
   "pages": [
     "index",
-    "---Route and configure---",
+    "---Setup and help---",
     "shipit",
     "setup-shipit",
     "shipit-help",
@@ -12,6 +12,9 @@
     "teach",
     "recall",
     "ketchup",
+    "in-your-own-words",
+    "sharpen",
+    "bro",
     "---Design and review---",
     "architect",
     "arena",
@@ -24,18 +27,15 @@
     "no-comments",
     "unslop",
     "technical-writing",
+    "typescript-best-practices",
+    "---Long runs---",
+    "show-me-your-work",
+    "figure-it-out",
     "---Improve the stack---",
     "reflect",
     "correct",
     "automate-me",
-    "show-me-your-work",
-    "figure-it-out",
     "create-verification-skill",
-    "maintain-verification-skill",
-    "---More---",
-    "bro",
-    "in-your-own-words",
-    "sharpen",
-    "typescript-best-practices"
+    "maintain-verification-skill"
   ]
 }

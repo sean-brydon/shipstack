@@ -1,0 +1,24 @@
+---
+title: "Visual parity"
+description: "Makes two UIs match pixel for pixel, checked by image diff. The baseline is the spec and is never touched."
+---
+
+**What it does.** Makes two UIs match pixel for pixel, checked by image diff. The baseline is the spec and is never touched.
+
+**Say something like.** "match this pixel for pixel", "migrate the styling"
+
+<details className="ss-full">
+<summary>Full instructions (what the agent reads)</summary>
+
+**You own pixel-exact equivalence. The baseline is the spec. You do not touch it.** Equivalence is verified by image diff, not by eye.
+
+1. Establish the baseline first, before any migration: a visual regression harness that screenshots the current component across its states, plus the target when matching two implementations. No baseline, no parity claim. A blocking prerequisite, not a follow-up. Inside a berth worktree, the **berth-visual-diff** skill is the harness. Give every state a page of its own (a dev-only route that renders the component in that state), list those pages and the sizes in `shots` in `.berth/config.json` so every compare is the same, and save the baseline with `berthd shots baseline --name parity-baseline` (add `--color-scheme both` when the component themes). When the target is the main checkout's running implementation, `--base main` is the baseline. Without berth, use the project's own harness, or Playwright `toHaveScreenshot` with zero tolerance, and commit the baseline images.
+2. Anti-shortcut clauses, stated and held: no harness modifications, no baseline tampering, no component restructuring to make a diff pass. A new mask or a looser threshold is a harness modification. Masks are only for content that changes between two loads of the same page, set before the baseline is taken. If the baseline looks wrong, stop and ask, don't edit it.
+3. Migrate one component at a time. Parallelize across worktrees, one owner per component (the **Separate Before Serializing Shared State** principle, [`~/.claude/skills/shipit/principles/separate-before-serializing-shared-state.md`](/principles/separate-before-serializing-shared-state)). On berth, that is a berth task per component (see the **berth-orchestrate** skill), each with its own dev server so the shots don't collide. Without berth, use the Agent tool with `isolation: "worktree"`. Shared primitives migrate first as a blocking phase.
+4. Verify each component against its baseline via image diff on the matching surface via the control skill. A nonzero diff is a fail. Investigate the pixel delta. With berth, `berthd shots compare --base parity-baseline` (or `--base main` when main is the baseline) must say `unchanged` at every size for every state page. Read the `look:` crop of any changed shot to find the delta, and the user sees the same visual diff with its heatmap. `/loop` per component until the diff is zero.
+5. Keep a parity table, one row per component (component, states, sizes, result, largest delta, note). Inside berth, register it as a CSV with the **berth-artifacts** skill (a `status` column of pass or fail colours its rows) and rewrite it as components land. Outside berth, a markdown table in the reply.
+6. Run **Opening a PR** ([`~/.claude/skills/shipit/playbooks/opening-a-pr.md`](/playbooks/opening-a-pr)) per component or per safe batch. Put the component's diff result in its PR.
+
+**Reply:** components migrated, the diff result for each (the parity table, and the visual diff for any that changed), the baseline harness location, what's left.
+
+</details>
