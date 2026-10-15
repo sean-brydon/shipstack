@@ -1,0 +1,83 @@
+{
+ "id": "ideation",
+ "title": "Multiple currencies, planned not built",
+ "command": "/shipit",
+ "playbook": "Ideation",
+ "environment": "Claude Code headless (claude -p) on a berth box, plan permission mode",
+ "berth": true,
+ "repo": "acme-invoices (examples/acme-invoices in this repo), copied to a fresh git repo",
+ "prompt": "/shipit I want invoices to support multiple currencies. what if we did that? no code yet, help me plan it.",
+ "model": "claude-opus-5-5",
+ "recorded": "2026-10-15",
+ "duration_s": 102,
+ "cost_usd": 0.5,
+ "turns": 6,
+ "agents": [
+  {
+   "label": "main",
+   "model": "claude-opus-5-5"
+  }
+ ],
+ "steps": [
+  {
+   "kind": "tool",
+   "agent": "main",
+   "name": "Bash",
+   "summary": "cat ~/.claude/skills/shipit/playbooks/ideation.md; echo ----; cat ~/.claude/shipit/models.md 2>/dev/null; echo ----; env | grep BERTH_; whic",
+   "input": "{\n \"command\": \"cat ~/.claude/skills/shipit/playbooks/ideation.md; echo ----; cat ~/.claude/shipit/models.md 2>/dev/null; echo ----; env | grep BERTH_; which berthd berth; echo ----; cat ~/.claude/projects/-tmp-claude-1000--home-sean-personal-shipstack-docs-site-run-1c3b01ee-680f-4cb3-a7f2-3f9f8d53fd7d-scratchpad-runs-ideation/memory/MEMORY.md 2>/dev/null; echo ----; cd /tmp/claude-1000/-home-sean-personal-shipstack-docs-site-run/1c3b01ee-680f-4cb3-a7f2-3f9f8d53fd7d/scratchpad/runs/ideation && git ls-files | head -100\",\n \"description\": \"Read ideation playbook, config, memory, and repo files\"\n}",
+   "output": "### Ideation\n\n**You own the options and the recommendation. The user owns the pick.** No code, no branch, no scaffold. The deliverable is a decision the user can make in one reply.\n\nFor \"I want to…\", \"what if we…\", \"I wonder if…\", \"help me plan\", \"no code, just ideas\". The one playbook where the **Never Block on the Human** principle (`~/.claude/skills/shipit/principles/never-block-on-the-human.md`) inverts. You stop and wait, by design. Exploring is cheap here. Building the wrong thing is not.\n\n1. **Play the goal back in one sentence.** Who it is for, what changes for them, and how you'd know it worked. Put that sentence at the top of the artifact. If you can't write it, the first question in step 9 is the one that lets you.\n2. **Check what's already decided.** Read the memories Claude Code loaded, the repo's AGENTS.md or CLAUDE.md, and any design notes or past PRs on the topic (`git log --grep`, `gh pr list --search`). A saved rejection or a parked idea is a constraint. It never comes back as an option. If the goal seems to need it, say so plainly and design around it.\n3. **Explore what exists.** Read the code the idea touches, enough to know what's cheap and what's structural. For a subsystem question, run the **how** skill (`~/.claude/skills/how/SKILL.md`). When the ground is broad (several subsystems, or how other products do it), fan out `Explore` subagents or the **swarm** skill (`~/.claude/skills/swarm/SKILL.md`) and keep only their conclusions (the **Guard the Context Window** principle, `~/.claude/skills/shipit/principles/guard-the-context-window.md`). When outward prior art dominates, run the **Research** playbook (`~/.claude/skills/shipit/playbooks/research.md`) first and feed its matrix in.\n4. **Attack the premise before multiplying it.** Ask whether an existing feature already covers the need, whether a smaller version delivers most of the value, and whether removing something beats adding something (the **Subtract Before You Add** principle, `~/.claude/skills/shipit/principles/subtract-before-you-add.md`). \"Don't build it\" and \"cut X instead\" are real options when they are true.\n5. **Draft 2-4 real options that differ in kind, not degree.** Each gets a letter (A, B, C, D) and these fields:\n   - **What it is.** One or two sentences.\n   - **What the user sees.** The experience, not the implementation.\n   -\n… (3434 more characters)",
+   "is_error": false
+  },
+  {
+   "kind": "text",
+   "agent": "main",
+   "text": "Small repo. I'll read it directly rather than fanning out."
+  },
+  {
+   "kind": "tool",
+   "agent": "main",
+   "name": "Bash",
+   "summary": "for f in README.md package.json examples/order.json src/cli.js src/invoice.js test/invoice.test.js; do echo \"=== $f\"; cat -n $f; done; ls -a",
+   "input": "{\n \"command\": \"for f in README.md package.json examples/order.json src/cli.js src/invoice.js test/invoice.test.js; do echo \\\"=== $f\\\"; cat -n $f; done; ls -a; git log --oneline | head; for p in experience-first subtract-before-you-add exhaust-the-design-space model-the-domain type-system-discipline; do echo \\\"=== $p\\\"; cat ~/.claude/skills/shipit/principles/$p.md; done\",\n \"description\": \"Read all repo files and relevant principles\"\n}",
+   "output": "=== README.md\n     1\t# acme-invoices\n     2\t\n     3\tTiny invoice calculator. `npm test` runs the tests; `npm run invoice` prints the example order.\n=== package.json\n     1\t{\n     2\t  \"name\": \"acme-invoices\",\n     3\t  \"version\": \"0.1.0\",\n     4\t  \"private\": true,\n     5\t  \"type\": \"module\",\n     6\t  \"scripts\": { \"test\": \"node --test\", \"invoice\": \"node src/cli.js\" }\n     7\t}\n=== examples/order.json\n     1\t{ \"items\": [{ \"name\": \"Widget\", \"price\": 19.99, \"qty\": 3 }], \"discountPercent\": 15, \"taxPercent\": 8 }\n=== src/cli.js\n     1\timport { readFileSync } from \"node:fs\";\n     2\timport { invoiceTotals, formatCents } from \"./invoice.js\";\n     3\t\n     4\tconst file = process.argv[2] ?? \"examples/order.json\";\n     5\tconst order = JSON.parse(readFileSync(file, \"utf8\"));\n     6\tconst t = invoiceTotals(order.items, order);\n     7\t\n     8\tconsole.log(`Subtotal: ${formatCents(t.subtotal)}`);\n     9\tif (t.discount) console.log(`Discount: -${formatCents(t.discount)}`);\n    10\tif (t.tax) console.log(`Tax:      ${formatCents(t.tax)}`);\n    11\tconsole.log(`Totall:   ${formatCents(t.total)}`);\n=== src/invoice.js\n     1\texport function toCents(dollars) {\n     2\t  return Math.round(dollars * 100);\n     3\t}\n     4\t\n     5\texport function lineTotal(item) {\n     6\t  return toCents(item.price) * item.qty;\n     7\t}\n     8\t\n     9\texport function invoiceTotals(items, { discountPercent = 0, taxPercent = 0 } = {}) {\n    10\t  const subtotal = items.reduce((sum, item) => sum + lineTotal(item), 0);\n    11\t  const discount = Math.floor((subtotal * discountPercent) / 100);\n    12\t  const afterDiscount = subtotal - discount;\n    13\t  const tax = Math.round((afterDiscount * taxPercent) / 100);\n    14\t  return { subtotal, discount, tax, total: afterDiscount + tax };\n    15\t}\n    16\t\n    17\texport function formatCents(cents) {\n    18\t  return `$${(cents / 100).toFixed(2)}`;\n    19\t}\n=== test/invoice.test.js\n     1\timport { test } from \"node:test\";\n     2\timport assert from \"node:assert/strict\";\n     3\timport { invoiceTotals, formatCents } from \"../src/invoice.js\";\n     4\t\n     5\ttest(\"sums line items\", () => {\n     6\t  const t = invoiceTotals([{ price: 2.5, qty: 2 }, { price: 1, qty: 1 }]);\n     7\t  assert.equal(t.total, 600);\n     8\t});\n     9\t\n    10\ttest(\"applies tax\", () => {\n    11\t  const t = invoiceTotals([{ price: 10, qty: 1 }], { taxPercent: 10 });\n… (8179 more characters)",
+   "is_error": false
+  },
+  {
+   "kind": "text",
+   "agent": "main",
+   "text": "The whole repo is 19 lines of logic, so I'll skip explorer and Plan agents. I'll measure the current behavior for a non-dollar currency directly."
+  },
+  {
+   "kind": "tool",
+   "agent": "main",
+   "name": "Bash",
+   "summary": "node --input-type=module -e '",
+   "input": "{\n \"command\": \"node --input-type=module -e '\\nimport { invoiceTotals, formatCents } from \\\"./src/invoice.js\\\";\\nconst jpy = invoiceTotals([{ price: 500, qty: 3 }], { taxPercent: 10 });\\nconsole.log(\\\"JPY 500x3 +10% tax today ->\\\", jpy, formatCents(jpy.total));\\nconst kwd = invoiceTotals([{ price: 1.235, qty: 1 }]);\\nconsole.log(\\\"KWD 1.235 today ->\\\", kwd, formatCents(kwd.total));\\nfor (const c of [\\\"USD\\\",\\\"EUR\\\",\\\"JPY\\\",\\\"KWD\\\",\\\"CLF\\\"]) {\\n  const f = new Intl.NumberFormat(\\\"en\\\", { style: \\\"currency\\\", currency: c });\\n  console.log(c, \\\"minor digits:\\\", f.resolvedOptions().maximumFractionDigits, \\\"format(1234.5):\\\", f.format(1234.5));\\n}\\nconsole.log(node = process.version);\\n' ; git log --all --oneline | wc -l; ls ~/.claude/skills/berth-artifacts/SKILL.md\",\n \"description\": \"Run current invoice code with yen and dinar amounts\"\n}",
+   "output": "JPY 500x3 +10% tax today -> { subtotal: 150000, discount: 0, tax: 15000, total: 165000 } $1650.00\nKWD 1.235 today -> { subtotal: 124, discount: 0, tax: 0, total: 124 } $1.24\nUSD minor digits: 2 format(1234.5): $1,234.50\nEUR minor digits: 2 format(1234.5): €1,234.50\nJPY minor digits: 0 format(1234.5): ¥1,235\nKWD minor digits: 3 format(1234.5): KWD 1,234.500\nCLF minor digits: 4 format(1234.5): CLF 1,234.5000\nfile:///tmp/claude-1000/-home-sean-personal-shipstack-docs-site-run/1c3b01ee-680f-4cb3-a7f2-3f9f8d53fd7d/scratchpad/runs/ideation/[eval1]:11\nconsole.log(node = process.version);\n                 ^\n\nReferenceError: node is not defined\n    at file:///tmp/claude-1000/-home-sean-personal-shipstack-docs-site-run/1c3b01ee-680f-4cb3-a7f2-3f9f8d53fd7d/scratchpad/runs/ideation/[eval1]:11:18\n    at ModuleJob.run (node:internal/modules/esm/module_job:439:25)\n    at async node:internal/modules/esm/loader:224:26\n    at async ModuleLoader.executeModuleJob (node:internal/modules/esm/loader:221:20)\n    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)\n\nNode.js v24.18.0\n1\n~/.claude/skills/berth-artifacts/SKILL.md",
+   "is_error": false
+  },
+  {
+   "kind": "tool",
+   "agent": "main",
+   "name": "ToolSearch",
+   "summary": "select:AskUserQuestion,ExitPlanMode",
+   "input": "{\n \"query\": \"select:AskUserQuestion,ExitPlanMode\",\n \"max_results\": 2\n}",
+   "output": "No matching deferred tools found",
+   "is_error": false
+  },
+  {
+   "kind": "tool",
+   "agent": "main",
+   "name": "Write",
+   "summary": "~/.claude/plans/i-want-invoices-to-parallel-octopus.md",
+   "input": "{\n \"file_path\": \"~/.claude/plans/i-want-invoices-to-parallel-octopus.md\",\n \"content\": \"# Multi-currency invoices: options\\n\\n**Goal.** Someone billing a customer in euros, yen or dinars gets an invoice whose totals are correct to that currency's smallest unit and printed with the right symbol. We'd know it worked when `npm run invoice` on a JPY or KWD order prints the right amount with no `$`, and the existing USD tests still pass unchanged.\\n\\n## Context\\n\\n`acme-invoices` is one module (`src/invoice.js`, 19 lines) plus a CLI and 3 tests. Dollars are baked in at two points:\\n\\n- `src/invoice.js:2` `toCents` multiplies by 100, so it assumes every currency has 2 decimal places.\\n- `src/invoice.js:18` `formatCents` hardcodes `$` and `.toFixed(2)`.\\n\\nThe order shape (`examples/order.json`) has no currency field. Discount floors and tax rounds in minor units (`src/invoice.js:11,13`), and that policy carries over to any currency once \\\"minor unit\\\" means the right thing.\\n\\n**Measured today** (Node 24.18, `node -e` against `src/invoice.js`):\\n\\n| input | what prints | correct |\\n|---|---|---|\\n| JPY 500 x3, 10% tax | `$1650.00` | `¥1,650` |\\n| KWD 1.235 x1 | `$1.24` (a fils lost to rounding) | `KWD 1.235` |\\n\\n**Already available.** `Intl.NumberFormat(..., { style: \\\"currency\\\", currency }).resolvedOptions().maximumFractionDigits` returns the minor-unit exponent (measured: USD 2, EUR 2, JPY 0, KWD 3, CLF 4) and formats with the right symbol. No hand-rolled currency table is needed.\\n\\n## Constraints from what's decided\\n\\n- No project memories, no CLAUDE.md or AGENTS.md, one commit in history. Nothing rejected or parked.\\n- Back-compat: an order with no `currency` should keep producing today's USD output, so the 3 existing tests stay as they are.\\n\\n## Options\\n\\n### A. One currency per invoice (recommended)\\n\\n- **What it is.** The order names one ISO 4217 code (`\\\"currency\\\": \\\"EUR\\\"`, default `USD`). All arithmetic stays in integer minor units of that currency, with the exponent read from `Intl`. Totals carry their currency, so formatting can't pair an amount with the wrong code.\\n- **What the user sees.** `Total: €54.73`, `Total: ¥1,650`, `Total: KWD 1.235`. Nothing else changes.\\n- **Effort.** S. One new field and a parse step at the boundary. `toCents` becomes `toMinor(amount, currency)` and `formatCents` be\n… (4278 more characters)",
+   "output": "File created successfully at: ~/.claude/plans/i-want-invoices-to-parallel-octopus.md (file state is current in your context — no need to Read it back)",
+   "is_error": false
+  }
+ ],
+ "result": "**Goal.** Someone billing a customer in euros, yen or dinars gets an invoice whose totals are exact to that currency's smallest unit and show the right symbol. I'll know it works when `npm run invoice` on a JPY or KWD order prints the right amount with no `$`, and the three existing USD tests still pass unchanged.\n\n**What's wrong today.** I ran the current code. Dollars are hardcoded in two places in `src/invoice.js`:\n- `toCents` (`src/invoice.js:2`) always multiplies by 100.\n- `formatCents` (`src/invoice.js:18`) always prints `$`.\n\nSo ¥500 × 3 with 10% tax prints `$1650.00`, and KWD 1.235 prints `$1.24`, which drops a fils. Node's built-in `Intl.NumberFormat` already knows how many decimal places each currency uses (JPY 0, KWD 3, CLF 4) and its symbol, so we don't need our own currency table.\n\n**Options:**\n- **A. One currency per invoice (recommended).** The order gets a `currency` field that defaults to USD. All math stays in whole units of that currency's smallest coin, and the totals carry their currency. Small effort, low risk, and existing orders behave the same.\n- **B. Line items in different currencies, converted to one invoice currency.** Needs exchange rates as input, a rule for where rounding happens, and a record of the rate used. Medium to large effort, and it has to be built on top of A anyway.\n- **C. Keep the math in USD and print an extra converted total.** I'd call this gimmicky. It looks like multi-currency support, but the customer is still billed in dollars. The converted lines won't add up to the converted total, and the rate goes stale.\n\n**Recommendation: A.** It scores 24/25, against 13 for both B and C. It fixes both hardcoded spots, and B would need it as a base anyway. I'd change my mind if a real customer bills a single invoice in several currencies.\n\n**How the principles changed the options:**\n- **Subtract Before You Add.** I tested a smaller version, just swapping `$` for the right symbol. It's measurably wrong for KWD, so it isn't a standalone option. It also led me to `Intl` instead of a hand-written currency table.\n- **Exhaust the Design Space.** That symbol-only version is a weaker form of A, not a different kind of option, so I folded it into A.\n- **Experience First.** This is why C is labeled gimmicky rather than offered as a cheap win.\n- **Model the Domain and Type System Discipline.** These shaped A: the totals carry their currency, and the currency code is checked once when the order is read.\n\n**The plan.** It's in `~/.claude/plans/i-want-invoices-to-parallel-octopus.md`: the goal, the measured evidence, the three options, the scoring table and a sketch of A. Plan mode blocks registering it as a berth artifact, so I'll do that once we're out of plan mode.\n\n**Side note.** `src/cli.js:11` prints `Totall:`. That's a one-line fix to include when we build.\n\n**Questions** (the question and plan-approval tools aren't available in this session, so they're here):\n1. Which option: **A (recommended)**, B or C?\n2. Does anyone need several currencies on one invoice, or is it one currency per customer? This decides A vs B.\n3. Should amounts follow the customer's locale (`1.234,50 €` for a German customer) or stay English-style everywhere (`€1,234.50`)?\n\nI won't write any code until you pick.",
+ "diff": null,
+ "notes": [
+  "Home-directory paths outside ~/src were shortened to ~/ before publishing. Nothing else was changed."
+ ]
+}

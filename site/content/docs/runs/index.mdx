@@ -1,0 +1,40 @@
+---
+title: Runs
+description: Real recorded sessions. Every prompt, tool call, reply, time and cost, as it happened.
+---
+
+Each page here is a real `claude -p` session, recorded with `--output-format stream-json` and turned into a page by `site-runs/normalize.py`. Nothing is edited except home-directory paths, and each run says so when that happened. Costs are at list API prices.
+
+The code runs use a small demo app, `examples/acme-invoices`, with two planted defects: a discount that is a cent off and a typo in the CLI. Each run got a fresh copy in its own git repo, so the diff on the page is the real one. The `/how` and `/why` runs read [berth](/berth)'s own source. The `/interrogate` run reviews this repo.
+
+<RunTable
+  runs={[
+    { id: 'trivial', href: '/runs/trivial', label: 'A trivial fix' },
+    { id: 'trivial-plain', href: '/runs/trivial', label: 'A trivial fix' },
+    { id: 'bugfix', href: '/runs/bugfix', label: 'A bug fix' },
+    { id: 'bugfix-plain', href: '/runs/bugfix', label: 'A bug fix' },
+    { id: 'ideation', href: '/runs/ideation', label: 'An ideation' },
+    { id: 'how', href: '/runs/how', label: '/how' },
+    { id: 'why', href: '/runs/why', label: '/why' },
+    { id: 'interrogate', href: '/runs/interrogate', label: '/interrogate' },
+  ]}
+/>
+
+The trivial fix and the bug fix were each recorded twice: once on a berth box, and once with berth hidden (every `BERTH_*` variable unset, `berthd` off the `PATH`, no berth MCP server). The switch in the sidebar picks which one their pages show.
+
+## What they show
+
+- **Small tasks stay small.** The trivial fix took 11 seconds and $0.22. The bug fix took under a minute and $0.40, with a failing test committed before the fix.
+- **Rigor costs where it earns its keep.** The `/interrogate` panel cost $6.27, more than the other seven runs together, and found five real bugs in this repo's own scripts.
+- **The process mostly holds without a human.** The bug fix runs read their playbook and the principles they cited, and listed the steps they skipped with a reason. The ideation run cited five principles it never opened, which the skill forbids.
+- **The rough edges show too.** Headless `claude -p` has no todo tool and no question tool, and plan mode blocks artifacts. Each page says where that bent the process, and where a run did something it shouldn't have.
+
+## How they were recorded
+
+```sh
+claude -p "<prompt>" --permission-mode auto \
+  --output-format stream-json --verbose > raw.jsonl
+python3 -I site-runs/normalize.py raw.jsonl meta.json > site/content/runs/<id>.json
+```
+
+The `/how`, `/why`, `/interrogate` and ideation runs used `--permission-mode plan`, so they could read but not change anything. Every run had only the berth MCP server (or none, for the runs without berth), so no other connected tools were in play.

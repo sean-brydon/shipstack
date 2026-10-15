@@ -5,7 +5,7 @@ import type { MDXComponents } from 'mdx/types';
 import { Callout } from './callout';
 import { EvalBars } from './eval-bars';
 import { Berth, NoBerth } from './mode';
-import { Run } from './run';
+import { Run, RunTable } from './run';
 
 export function getMDXComponents(components?: MDXComponents) {
   return {
@@ -15,6 +15,7 @@ export function getMDXComponents(components?: MDXComponents) {
     EvalBars,
     NoBerth,
     Run,
+    RunTable,
     Step,
     Steps,
     Tab,

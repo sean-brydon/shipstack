@@ -1,0 +1,15 @@
+---
+title: /why
+description: A question about why berth's laptop proxy rewrites the Host header, answered by /why from the code and its history.
+---
+
+[`/why`](/skills/why) explains why code is the way it is, from the code, its history and its tests. This run asks it about [berth](/berth)'s laptop proxy, read-only, in plan mode.
+
+<Run id="why" />
+
+## What to notice
+
+- **Code first, with line numbers.** It found the rewrite in `internal/proxy/proxy.go`, the matching `Origin`, `Referer` and redirect rewrites, and the test that pins all of them.
+- **Recorded intent and inference are kept apart.** The stated reason ("dev servers need no configuration") comes from code comments and two docs pages. The list of dev servers that check the Host header is labeled as its own inference.
+- **It said where the trail ends.** Every line traces to one squashed import commit with no PR, so the original discussion is unknown, and the confidence table says so.
+- **It skipped the subagents the skill describes**, and said so: it ran the investigation itself, because git and `gh` were the only sources. That kept it to $0.45 and about a minute. The sources table, with six rows of "unavailable", is honest but more than a code question needs.

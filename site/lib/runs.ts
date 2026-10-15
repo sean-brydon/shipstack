@@ -1,4 +1,4 @@
-import { readFile, readdir } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 // A recorded `claude -p` session, as content/runs/<id>.json holds it.
@@ -22,6 +22,7 @@ export type RunRecord = {
   command?: string;
   playbook?: string;
   environment?: string;
+  berth?: boolean;
   repo?: string;
   prompt?: string;
   model?: string;
@@ -34,7 +35,6 @@ export type RunRecord = {
   result?: string;
   diff?: string | null;
   notes?: string[];
-  fixture?: boolean;
 };
 
 const runsDir = join(process.cwd(), 'content', 'runs');
@@ -48,13 +48,5 @@ export async function loadRun(id: string): Promise<RunRecord | null> {
     return data;
   } catch {
     return null;
-  }
-}
-
-export async function listRunIds(): Promise<string[]> {
-  try {
-    return (await readdir(runsDir)).filter((f) => f.endsWith('.json')).map((f) => f.slice(0, -5));
-  } catch {
-    return [];
   }
 }

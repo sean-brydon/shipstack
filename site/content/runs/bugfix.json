@@ -1,0 +1,97 @@
+{
+ "id": "bugfix",
+ "title": "A discount that is a cent off",
+ "command": "/shipit",
+ "playbook": "Bug fix",
+ "environment": "Claude Code headless (claude -p) on a berth box, auto permission mode",
+ "berth": true,
+ "repo": "acme-invoices (examples/acme-invoices in this repo), copied to a fresh git repo",
+ "prompt": "/shipit invoice totals are a cent off when a percentage discount applies: 3 widgets at $19.99 with 15% off shows a discount of $8.99, should be $9.00. repro first, then fix and verify.",
+ "model": "claude-opus-5-5",
+ "recorded": "2026-10-15",
+ "duration_s": 54,
+ "cost_usd": 0.4,
+ "turns": 8,
+ "agents": [
+  {
+   "label": "main",
+   "model": "claude-opus-5-5"
+  }
+ ],
+ "steps": [
+  {
+   "kind": "tool",
+   "agent": "main",
+   "name": "Bash",
+   "summary": "cat ~/.claude/shipit/models.md 2>/dev/null; echo ---; env | grep ^BERTH_; which berthd berth; echo ---; ls ~/.claude/projects/-tmp-",
+   "input": "{\n \"command\": \"cat ~/.claude/shipit/models.md 2>/dev/null; echo ---; env | grep ^BERTH_; which berthd berth; echo ---; ls ~/.claude/projects/-tmp-claude-1000--home-sean-personal-shipstack-docs-site-run-1c3b01ee-680f-4cb3-a7f2-3f9f8d53fd7d-scratchpad-runs-bugfix/memory/ 2>/dev/null; echo ---; git ls-files; echo ---; cat ~/.claude/skills/shipit/playbooks/bug-fix.md\",\n \"description\": \"Load config, check berth, list repo, read bug-fix playbook\"\n}",
+   "output": "---\nBERTH_SESSION=shipstack-docs-site-run-claude-zu5\nBERTH_PORT=41070\nBERTH_ROOT_PATH=~/personal/shipstack\nBERTH_AGENT=claude\nBERTH_BRANCH=docs-site-run\nBERTH_HOME=~/.config/berth\nBERTH_WORKTREE_SLUG=shipstack_docs_site_run\nBERTH_URL=http://docs-site-run.shipstack.devbox.localhost:1377\nBERTH_LOCATION=shipstack\nBERTH_BROWSER_PROXY=http://127.0.0.1:38549\nBERTH_WORKTREE_PATH=~/personal/shipstack-docs-site-run\nBERTH_BOX=devbox\nBERTH_WORKTREE_NAME=docs-site-run\n~/.local/bin/berthd\nberth not found\n---\n---\nREADME.md\nexamples/order.json\npackage.json\nsrc/cli.js\nsrc/invoice.js\ntest/invoice.test.js\n---\n### Bug fix\n\n**You own this task. Plan, review, verify.** Delegate investigation and the fix to subagents, stay in the lead. Pick each subagent's `effort` for the job, per the Subagents section of `~/.claude/skills/shipit/SKILL.md`.\n\nBe scientific. Every shipped line traces to runtime evidence. Belt-and-suspenders that \"might help\" is a hypothesis, not a fix. It does not ship. When evidence refutes a hypothesis, revert what it motivated. The smallest change the evidence justifies ships, nothing more.\n\n1. Reproduce it yourself on the matching surface via the control skill (Non-negotiables), even when a debug or instrumentation protocol says to ask the user to reproduce. For a page, that is the **berth-browser** skill inside a berth worktree (`berthd browser open`, drive it, `berthd browser console`, `berthd browser shot`), else the **claude-in-chrome** skill. For a CLI or TUI, drive it with Bash, or tmux (`tmux new -d`, `send-keys`, `capture-pane`) when it is interactive. Ask the user only with a stated, specific reason the control surface cannot reach the target, and only after driving it as far as it goes. If it won't reproduce directly, synthesize the trigger, tighten conditions, or instrument until it fires. Save the failing output, and for a visual bug the screenshot, as the before half of the proof.\n2. Binary-search the cause. Form the candidate hypotheses, then rule them out until one survives. Seed them with the **how** skill (`~/.claude/skills/how/SKILL.md`) over the affected subsystem and the **why** skill (`~/.claude/skills/why/SKILL.md`) for regression history. Each pass, take the split that cuts the most remaining problem space, get runtime evidence, eliminate. When program state is u\n… (2003 more characters)",
+   "is_error": false
+  },
+  {
+   "kind": "tool",
+   "agent": "main",
+   "name": "Bash",
+   "summary": "pwd; for f in README.md package.json examples/order.json src/cli.js src/invoice.js test/invoice.test.js; do echo \"=== $f\"; cat -n $f; done; ",
+   "input": "{\n \"command\": \"pwd; for f in README.md package.json examples/order.json src/cli.js src/invoice.js test/invoice.test.js; do echo \\\"=== $f\\\"; cat -n $f; done; git remote -v\",\n \"description\": \"Read all repo files\"\n}",
+   "output": "/tmp/claude-1000/-home-sean-personal-shipstack-docs-site-run/1c3b01ee-680f-4cb3-a7f2-3f9f8d53fd7d/scratchpad/runs/bugfix\n=== README.md\n     1\t# acme-invoices\n     2\t\n     3\tTiny invoice calculator. `npm test` runs the tests; `npm run invoice` prints the example order.\n=== package.json\n     1\t{\n     2\t  \"name\": \"acme-invoices\",\n     3\t  \"version\": \"0.1.0\",\n     4\t  \"private\": true,\n     5\t  \"type\": \"module\",\n     6\t  \"scripts\": { \"test\": \"node --test\", \"invoice\": \"node src/cli.js\" }\n     7\t}\n=== examples/order.json\n     1\t{ \"items\": [{ \"name\": \"Widget\", \"price\": 19.99, \"qty\": 3 }], \"discountPercent\": 15, \"taxPercent\": 8 }\n=== src/cli.js\n     1\timport { readFileSync } from \"node:fs\";\n     2\timport { invoiceTotals, formatCents } from \"./invoice.js\";\n     3\t\n     4\tconst file = process.argv[2] ?? \"examples/order.json\";\n     5\tconst order = JSON.parse(readFileSync(file, \"utf8\"));\n     6\tconst t = invoiceTotals(order.items, order);\n     7\t\n     8\tconsole.log(`Subtotal: ${formatCents(t.subtotal)}`);\n     9\tif (t.discount) console.log(`Discount: -${formatCents(t.discount)}`);\n    10\tif (t.tax) console.log(`Tax:      ${formatCents(t.tax)}`);\n    11\tconsole.log(`Totall:   ${formatCents(t.total)}`);\n=== src/invoice.js\n     1\texport function toCents(dollars) {\n     2\t  return Math.round(dollars * 100);\n     3\t}\n     4\t\n     5\texport function lineTotal(item) {\n     6\t  return toCents(item.price) * item.qty;\n     7\t}\n     8\t\n     9\texport function invoiceTotals(items, { discountPercent = 0, taxPercent = 0 } = {}) {\n    10\t  const subtotal = items.reduce((sum, item) => sum + lineTotal(item), 0);\n    11\t  const discount = Math.floor((subtotal * discountPercent) / 100);\n    12\t  const afterDiscount = subtotal - discount;\n    13\t  const tax = Math.round((afterDiscount * taxPercent) / 100);\n    14\t  return { subtotal, discount, tax, total: afterDiscount + tax };\n    15\t}\n    16\t\n    17\texport function formatCents(cents) {\n    18\t  return `$${(cents / 100).toFixed(2)}`;\n    19\t}\n=== test/invoice.test.js\n     1\timport { test } from \"node:test\";\n     2\timport assert from \"node:assert/strict\";\n     3\timport { invoiceTotals, formatCents } from \"../src/invoice.js\";\n     4\t\n     5\ttest(\"sums line items\", () => {\n     6\t  const t = invoiceTotals([{ price: 2.5, qty: 2 }, { price: 1, qty: 1 }]);\n     7\t  assert.equal(t.total, 600);\n     8\t});\n… (274 more characters)",
+   "is_error": false
+  },
+  {
+   "kind": "tool",
+   "agent": "main",
+   "name": "Bash",
+   "summary": "mkdir -p /tmp/claude-1000/invoice-proof && npm run -s invoice | tee /tmp/claude-1000/invoice-proof/before.txt; node -e 'const s=1999*3; cons",
+   "input": "{\n \"command\": \"mkdir -p /tmp/claude-1000/invoice-proof && npm run -s invoice | tee /tmp/claude-1000/invoice-proof/before.txt; node -e 'const s=1999*3; console.log({subtotal:s, raw:s*15/100, floor:Math.floor(s*15/100), round:Math.round(s*15/100)})'; npm test 2>&1 | tail -8\",\n \"description\": \"Reproduce the bug on the CLI and run tests\"\n}",
+   "output": "Subtotal: $59.97\nDiscount: -$8.99\nTax:      $4.08\nTotall:   $55.06\n{ subtotal: 5997, raw: 899.55, floor: 899, round: 900 }\nℹ tests 3\nℹ suites 0\nℹ pass 3\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 91.820503",
+   "is_error": false
+  },
+  {
+   "kind": "tool",
+   "agent": "main",
+   "name": "Bash",
+   "summary": "cd ~/.claude/skills/shipit/principles && wc -l fix-root-causes.md sequence-verifiable-units.md test-behavior-not-implementation.md && cat fi",
+   "input": "{\n \"command\": \"cd ~/.claude/skills/shipit/principles && wc -l fix-root-causes.md sequence-verifiable-units.md test-behavior-not-implementation.md && cat fix-root-causes.md sequence-verifiable-units.md test-behavior-not-implementation.md; sed -n 1,200p ../references/proof-pack.md | head -60\",\n \"description\": \"Read the principles and proof-pack reference\"\n}",
+   "output": "20 fix-root-causes.md\n  13 sequence-verifiable-units.md\n  17 test-behavior-not-implementation.md\n  50 total\n# Fix Root Causes\n\n**Applies when:** you are debugging.\n\nWhen debugging, do not fix symptoms. Trace every problem to its root cause and fix it there.\n\n**Why:** Symptom fixes accumulate. Each workaround makes the system harder to reason about, and the real bug remains. Root-cause fixes are slower upfront but reduce total debugging time.\n\n**Pattern:**\n- Reproduce first\n- Ask \"why\" until you hit the root cause\n- Do not add guards (adding a nil check to silence a crash is a symptom fix)\n- If a workaround needs a paragraph-long comment to justify it, the code is wrong (fix the code, not the comment)\n- Check for the pattern, not just the instance (grep for the same pattern, fix all instances)\n- When stuck, instrument. Don't guess (add logging, read the actual error)\n- If the deciding fact took a deep dig to find, propose the cheap, always-on signal that would have shown it at first look\n\n**Restart bugs: suspect state before code**\n\nWhen something \"fails after restart,\" suspect stale persistent state first: config files, caches, lock files, serialized state. If clearing a state file restores behavior, prioritize state validation as the fix.\n# Sequence work into verifiable units\n\n**Applies when:** you do multi-step work (sweeps, migrations, runs of similar edits) or decide how to stack commits and PRs.\n\nOrder work as a sequence of small units, each ending in a state you can check, and don't advance until the current one is green.\n\n**Why:** A break caught at the unit that caused it is cheap to localize. A break caught after a batch is buried, and you have already built further on a broken base. Sequencing those same units into a delivery a reviewer can replay turns \"trust me\" into \"watch it go red, then green.\"\n\n**Execution.** In a sweep, migration, or any run of similar edits, verify each change before starting the next. Each unit is a before/after bracket: known-good state, one change, run the check, then proceed. Rebase onto clean trunk first so every check measures against the real baseline. When a lever does the edits, the per-unit check is nearly free. Run it anyway.\n\n**Delivery.** Stack commits and PRs in the order that proves the work. The canonical shape is the failing test first, then the fix on top. Other story\n… (5529 more characters)",
+   "is_error": false
+  },
+  {
+   "kind": "text",
+   "agent": "main",
+   "text": "Reproduced on the CLI: 5997¢ × 15% = 899.55¢, and `Math.floor` truncates it to 899. Branching and landing the failing test first."
+  },
+  {
+   "kind": "tool",
+   "agent": "main",
+   "name": "Bash",
+   "summary": "grep -rn \"Math\\.\\(floor\\|trunc\\|ceil\\)\\|parseInt\\||0\" src test; git switch -c fix/discount-rounding && cat >> test/invoice.test.js <<'EOF'",
+   "input": "{\n \"command\": \"grep -rn \\\"Math\\\\.\\\\(floor\\\\|trunc\\\\|ceil\\\\)\\\\|parseInt\\\\||0\\\" src test; git switch -c fix/discount-rounding && cat >> test/invoice.test.js <<'EOF'\\n\\ntest(\\\"rounds a percentage discount to the nearest cent\\\", () => {\\n  const t = invoiceTotals([{ price: 19.99, qty: 3 }], { discountPercent: 15 });\\n  assert.equal(t.discount, 900);\\n  assert.equal(t.total, 5097);\\n});\\nEOF\\nnpm test 2>&1 | tee /tmp/claude-1000/invoice-proof/test-before.txt | grep -E \\\"^(not ok|ok)|expected|actual|ℹ (pass|fail)\\\"\",\n \"description\": \"Check for other truncations, add failing test on new branch\"\n}",
+   "output": "src/invoice.js:11:  const discount = Math.floor((subtotal * discountPercent) / 100);\nSwitched to a new branch 'fix/discount-rounding'\nℹ pass 3\nℹ fail 1\n    actual: 899,\n    expected: 900,",
+   "is_error": false
+  },
+  {
+   "kind": "tool",
+   "agent": "main",
+   "name": "Bash",
+   "summary": "git add test/invoice.test.js && git commit -q -m \"test: cover percentage discount rounding to the nearest cent",
+   "input": "{\n \"command\": \"git add test/invoice.test.js && git commit -q -m \\\"test: cover percentage discount rounding to the nearest cent\\n\\n3 x \\\\$19.99 at 15% off is 899.55 cents of discount, which should\\nround to 900 (\\\\$9.00). This test fails on main, which floors it to 899.\\n\\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\\\" && sed -i 's/const discount = Math.floor(/const discount = Math.round(/' src/invoice.js && git diff && npm test 2>&1 | tee /tmp/claude-1000/invoice-proof/test-after.txt | grep -E \\\"ℹ (pass|fail)\\\" && npm run -s invoice | tee /tmp/claude-1000/invoice-proof/after.txt\",\n \"description\": \"Commit failing test, apply fix, rerun tests and CLI\"\n}",
+   "output": "diff --git a/src/invoice.js b/src/invoice.js\nindex 94726a0..e31e6b1 100644\n--- a/src/invoice.js\n+++ b/src/invoice.js\n@@ -8,7 +8,7 @@ export function lineTotal(item) {\n \n export function invoiceTotals(items, { discountPercent = 0, taxPercent = 0 } = {}) {\n   const subtotal = items.reduce((sum, item) => sum + lineTotal(item), 0);\n-  const discount = Math.floor((subtotal * discountPercent) / 100);\n+  const discount = Math.round((subtotal * discountPercent) / 100);\n   const afterDiscount = subtotal - discount;\n   const tax = Math.round((afterDiscount * taxPercent) / 100);\n   return { subtotal, discount, tax, total: afterDiscount + tax };\nℹ pass 4\nℹ fail 0\nSubtotal: $59.97\nDiscount: -$9.00\nTax:      $4.08\nTotall:   $55.05",
+   "is_error": false
+  },
+  {
+   "kind": "tool",
+   "agent": "main",
+   "name": "Bash",
+   "summary": "git commit -qam \"fix: round percentage discounts to the nearest cent",
+   "input": "{\n \"command\": \"git commit -qam \\\"fix: round percentage discounts to the nearest cent\\n\\nThe discount was floored, so any fractional cent was dropped and the\\ncustomer was under-discounted by up to a cent. Tax already uses\\nMath.round, so the discount now matches it.\\n\\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\\\" && git log --oneline main..HEAD && git switch -q --detach HEAD~1 && npm test 2>&1 | grep -E \\\"ℹ (pass|fail)\\\"; git switch -q fix/discount-rounding && git status -sb | head -1\",\n \"description\": \"Commit fix and confirm test fails at the test-only commit\"\n}",
+   "output": "00e6dd5 fix: round percentage discounts to the nearest cent\n5d2deb1 test: cover percentage discount rounding to the nearest cent\nℹ pass 3\nℹ fail 1\n## fix/discount-rounding",
+   "is_error": false
+  }
+ ],
+ "result": "I fixed the discount bug. The example order now shows a discount of $9.00, and the customer's total drops by the missing cent ($55.06 → $55.05). It's on branch `fix/discount-rounding` in two commits. I didn't open a PR because this repo has no git remote.\n\n**What was broken.** The discount was computed in cents and then rounded down with `Math.floor` at `src/invoice.js:11`. 3 × 1999¢ = 5997¢, and 15% of that is 899.55¢. Rounding down gives 899¢ ($8.99) when it should be 900¢. Every fractional-cent discount was cut short by up to a cent.\n\n**How I found it.** I first checked whether converting $19.99 to cents was off, which is a common floating-point problem. It wasn't, because the subtotal came out at exactly 5997. The only remaining step was the rounding, and running it showed `{ raw: 899.55, floor: 899, round: 900 }`.\n\n**Fix.** `Math.floor` → `Math.round`, which is what the tax line just below already uses. A search of `src` and `test` found no other place that drops fractions (`grep -rn \"Math\\.\\(floor\\|trunc\\|ceil\\)\\|parseInt\\||0\" src test`).\n\n**Proof.** I ran `npm run invoice` on the example order:\n\nBefore (main):\n```\nSubtotal: $59.97\nDiscount: -$8.99\nTax:      $4.08\nTotall:   $55.06\n```\nAfter:\n```\nSubtotal: $59.97\nDiscount: -$9.00\nTax:      $4.08\nTotall:   $55.05\n```\n\n| check | at commit | result |\n|---|---|---|\n| `npm test` | `5d2deb1` (test only) | 3 pass, 1 fail. `actual: 899, expected: 900` |\n| `npm test` | `00e6dd5` (fix) | 4 pass, 0 fail |\n| `npm run invoice` | `00e6dd5` | Discount -$9.00, Total $55.05 |\n\nThe saved outputs are in `/tmp/claude-1000/invoice-proof/`.\n\n**Principles that shaped it:**\n- **Fix Root Causes.** I fixed the rounding call itself instead of patching the total afterwards. I also searched for the same pattern elsewhere and found only this one.\n- **Sequence Work into Verifiable Units.** The failing test is committed before the fix. I checked out the test-only commit and confirmed it fails there.\n- **Test Behavior, Not Implementation.** The new test calls `invoiceTotals` with the reported order and checks the exact values (`discount === 900`, `total === 5097`).\n\n**Skipped, with reasons:**\n- No subagents and no how, why or architect pass. It's a one-word change in one function, and the repo has a single commit, so there's no history to dig through.\n- `/simplify` didn't run, since a one-word change leaves nothing to simplify.\n- No PR, since there's no remote.\n\n**Decision for you.** `Math.round` rounds exact half cents up in the customer's favor (a 0.5¢ discount becomes 1¢). If your accounting needs round-half-to-even (banker's rounding), that's your call, and it would apply to the tax line too.\n\n**Not touched.** `src/cli.js:11` prints `Totall:` with a typo. It's a separate one-line fix if you want it.",
+ "diff": "diff --git a/src/invoice.js b/src/invoice.js\nindex 94726a0..e31e6b1 100644\n--- a/src/invoice.js\n+++ b/src/invoice.js\n@@ -8,7 +8,7 @@ export function lineTotal(item) {\n \n export function invoiceTotals(items, { discountPercent = 0, taxPercent = 0 } = {}) {\n   const subtotal = items.reduce((sum, item) => sum + lineTotal(item), 0);\n-  const discount = Math.floor((subtotal * discountPercent) / 100);\n+  const discount = Math.round((subtotal * discountPercent) / 100);\n   const afterDiscount = subtotal - discount;\n   const tax = Math.round((afterDiscount * taxPercent) / 100);\n   return { subtotal, discount, tax, total: afterDiscount + tax };\ndiff --git a/test/invoice.test.js b/test/invoice.test.js\nindex dd4e8b3..1d25fbb 100644\n--- a/test/invoice.test.js\n+++ b/test/invoice.test.js\n@@ -15,3 +15,9 @@ test(\"applies tax\", () => {\n test(\"formats cents\", () => {\n   assert.equal(formatCents(1234), \"$12.34\");\n });\n+\n+test(\"rounds a percentage discount to the nearest cent\", () => {\n+  const t = invoiceTotals([{ price: 19.99, qty: 3 }], { discountPercent: 15 });\n+  assert.equal(t.discount, 900);\n+  assert.equal(t.total, 5097);\n+});\n",
+ "notes": [
+  "The demo app's README names the planted bug. That paragraph was removed from the copy before the run, so the agent had to find the cause itself.",
+  "Home-directory paths outside ~/src were shortened to ~/ before publishing. Nothing else was changed."
+ ]
+}

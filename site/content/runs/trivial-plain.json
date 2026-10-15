@@ -1,0 +1,60 @@
+{
+ "id": "trivial-plain",
+ "title": "Fix the \"Totall\" typo, without berth",
+ "command": "/shipit",
+ "playbook": "Trivial lane",
+ "environment": "Claude Code headless (claude -p), no berth, auto permission mode",
+ "berth": false,
+ "repo": "acme-invoices (examples/acme-invoices in this repo), copied to a fresh git repo",
+ "prompt": "/shipit the CLI summary prints \"Totall\" instead of \"Total\". fix the typo.",
+ "model": "claude-opus-5-5",
+ "recorded": "2026-10-15",
+ "duration_s": 14,
+ "cost_usd": 0.23,
+ "turns": 4,
+ "agents": [
+  {
+   "label": "main",
+   "model": "claude-opus-5-5"
+  }
+ ],
+ "steps": [
+  {
+   "kind": "tool",
+   "agent": "main",
+   "name": "Bash",
+   "summary": "git ls-files && grep -rn \"Totall\" --exclude-dir=.git .",
+   "input": "{\n \"command\": \"git ls-files && grep -rn \\\"Totall\\\" --exclude-dir=.git .\",\n \"description\": \"List files and find the typo\"\n}",
+   "output": "README.md\nexamples/order.json\npackage.json\nsrc/cli.js\nsrc/invoice.js\ntest/invoice.test.js\nsrc/cli.js:11:console.log(`Totall:   ${formatCents(t.total)}`);",
+   "is_error": false
+  },
+  {
+   "kind": "tool",
+   "agent": "main",
+   "name": "Bash",
+   "summary": "cat src/cli.js package.json && grep -rn \"Total\" test README.md",
+   "input": "{\n \"command\": \"cat src/cli.js package.json && grep -rn \\\"Total\\\" test README.md\",\n \"description\": \"Show CLI source, package scripts, and Total references\"\n}",
+   "output": "import { readFileSync } from \"node:fs\";\nimport { invoiceTotals, formatCents } from \"./invoice.js\";\n\nconst file = process.argv[2] ?? \"examples/order.json\";\nconst order = JSON.parse(readFileSync(file, \"utf8\"));\nconst t = invoiceTotals(order.items, order);\n\nconsole.log(`Subtotal: ${formatCents(t.subtotal)}`);\nif (t.discount) console.log(`Discount: -${formatCents(t.discount)}`);\nif (t.tax) console.log(`Tax:      ${formatCents(t.tax)}`);\nconsole.log(`Totall:   ${formatCents(t.total)}`);\n{\n  \"name\": \"acme-invoices\",\n  \"version\": \"0.1.0\",\n  \"private\": true,\n  \"type\": \"module\",\n  \"scripts\": { \"test\": \"node --test\", \"invoice\": \"node src/cli.js\" }\n}\ntest/invoice.test.js:3:import { invoiceTotals, formatCents } from \"../src/invoice.js\";\ntest/invoice.test.js:6:  const t = invoiceTotals([{ price: 2.5, qty: 2 }, { price: 1, qty: 1 }]);\ntest/invoice.test.js:11:  const t = invoiceTotals([{ price: 10, qty: 1 }], { taxPercent: 10 });",
+   "is_error": false
+  },
+  {
+   "kind": "text",
+   "agent": "main",
+   "text": "Labels are padded to align values, so \"Total:\" needs one more space to keep alignment."
+  },
+  {
+   "kind": "tool",
+   "agent": "main",
+   "name": "Bash",
+   "summary": "sed -i 's/`Totall:   \\$/`Total:    $/' src/cli.js && git diff && npm run -s invoice && npm test 2>&1 | tail -8",
+   "input": "{\n \"command\": \"sed -i 's/`Totall:   \\\\$/`Total:    $/' src/cli.js && git diff && npm run -s invoice && npm test 2>&1 | tail -8\",\n \"description\": \"Fix the typo, run the CLI, and run tests\"\n}",
+   "output": "diff --git a/src/cli.js b/src/cli.js\nindex 72aad4c..ba9a505 100644\n--- a/src/cli.js\n+++ b/src/cli.js\n@@ -8,4 +8,4 @@ const t = invoiceTotals(order.items, order);\n console.log(`Subtotal: ${formatCents(t.subtotal)}`);\n if (t.discount) console.log(`Discount: -${formatCents(t.discount)}`);\n if (t.tax) console.log(`Tax:      ${formatCents(t.tax)}`);\n-console.log(`Totall:   ${formatCents(t.total)}`);\n+console.log(`Total:    ${formatCents(t.total)}`);\nSubtotal: $59.97\nDiscount: -$8.99\nTax:      $4.08\nTotal:    $55.06\nℹ tests 3\nℹ suites 0\nℹ pass 3\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 63.195722",
+   "is_error": false
+  }
+ ],
+ "result": "The CLI summary now prints \"Total\" instead of \"Totall\". The fix is in `src/cli.js:11`. I added one space after the label so the amount still lines up with the rows above it.\n\nI ran `npm run invoice` and the last line now reads `Total:    $55.06`, in line with the other rows. `npm test` passes all 3 tests, but none of them check the CLI output. Nothing is committed yet.",
+ "diff": "diff --git a/src/cli.js b/src/cli.js\nindex 72aad4c..ba9a505 100644\n--- a/src/cli.js\n+++ b/src/cli.js\n@@ -8,4 +8,4 @@ const t = invoiceTotals(order.items, order);\n console.log(`Subtotal: ${formatCents(t.subtotal)}`);\n if (t.discount) console.log(`Discount: -${formatCents(t.discount)}`);\n if (t.tax) console.log(`Tax:      ${formatCents(t.tax)}`);\n-console.log(`Totall:   ${formatCents(t.total)}`);\n+console.log(`Total:    ${formatCents(t.total)}`);\n",
+ "notes": [
+  "The demo app's README names the planted bug. That paragraph was removed from the copy before the run, so the agent had to find the cause itself."
+ ]
+}

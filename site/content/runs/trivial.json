@@ -1,0 +1,46 @@
+{
+ "id": "trivial",
+ "title": "Fix the \"Totall\" typo",
+ "command": "/shipit",
+ "playbook": "Trivial lane",
+ "environment": "Claude Code headless (claude -p) on a berth box, auto permission mode",
+ "berth": true,
+ "repo": "acme-invoices (examples/acme-invoices in this repo), copied to a fresh git repo",
+ "prompt": "/shipit the CLI summary prints \"Totall\" instead of \"Total\". fix the typo.",
+ "model": "claude-opus-5-5",
+ "recorded": "2026-10-15",
+ "duration_s": 11,
+ "cost_usd": 0.22,
+ "turns": 3,
+ "agents": [
+  {
+   "label": "main",
+   "model": "claude-opus-5-5"
+  }
+ ],
+ "steps": [
+  {
+   "kind": "tool",
+   "agent": "main",
+   "name": "Bash",
+   "summary": "git ls-files && grep -rn \"Totall\" . --exclude-dir=.git; cat package.json 2>/dev/null",
+   "input": "{\n \"command\": \"git ls-files && grep -rn \\\"Totall\\\" . --exclude-dir=.git; cat package.json 2>/dev/null\",\n \"description\": \"List files, find the typo, show package.json\"\n}",
+   "output": "README.md\nexamples/order.json\npackage.json\nsrc/cli.js\nsrc/invoice.js\ntest/invoice.test.js\nsrc/cli.js:11:console.log(`Totall:   ${formatCents(t.total)}`);\n{\n  \"name\": \"acme-invoices\",\n  \"version\": \"0.1.0\",\n  \"private\": true,\n  \"type\": \"module\",\n  \"scripts\": { \"test\": \"node --test\", \"invoice\": \"node src/cli.js\" }\n}",
+   "is_error": false
+  },
+  {
+   "kind": "tool",
+   "agent": "main",
+   "name": "Bash",
+   "summary": "cat src/cli.js && sed -i 's/Totall:   /Total:    /' src/cli.js && git diff && node src/cli.js examples/order.json && npm test 2>&1 | tail -8",
+   "input": "{\n \"command\": \"cat src/cli.js && sed -i 's/Totall:   /Total:    /' src/cli.js && git diff && node src/cli.js examples/order.json && npm test 2>&1 | tail -8\",\n \"description\": \"Fix typo, run CLI and tests\"\n}",
+   "output": "import { readFileSync } from \"node:fs\";\nimport { invoiceTotals, formatCents } from \"./invoice.js\";\n\nconst file = process.argv[2] ?? \"examples/order.json\";\nconst order = JSON.parse(readFileSync(file, \"utf8\"));\nconst t = invoiceTotals(order.items, order);\n\nconsole.log(`Subtotal: ${formatCents(t.subtotal)}`);\nif (t.discount) console.log(`Discount: -${formatCents(t.discount)}`);\nif (t.tax) console.log(`Tax:      ${formatCents(t.tax)}`);\nconsole.log(`Totall:   ${formatCents(t.total)}`);\ndiff --git a/src/cli.js b/src/cli.js\nindex 72aad4c..ba9a505 100644\n--- a/src/cli.js\n+++ b/src/cli.js\n@@ -8,4 +8,4 @@ const t = invoiceTotals(order.items, order);\n console.log(`Subtotal: ${formatCents(t.subtotal)}`);\n if (t.discount) console.log(`Discount: -${formatCents(t.discount)}`);\n if (t.tax) console.log(`Tax:      ${formatCents(t.tax)}`);\n-console.log(`Totall:   ${formatCents(t.total)}`);\n+console.log(`Total:    ${formatCents(t.total)}`);\nSubtotal: $59.97\nDiscount: -$8.99\nTax:      $4.08\nTotal:    $55.06\nℹ tests 3\nℹ suites 0\nℹ pass 3\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 70.590464",
+   "is_error": false
+  }
+ ],
+ "result": "The CLI summary now prints \"Total\" instead of \"Totall\". The fix is at `src/cli.js:11`, and I added one space after the label so the amount still lines up with the other rows.\n\n**Check.** I ran `node src/cli.js examples/order.json` and the last line is now `Total:    $55.06`, aligned with Subtotal, Discount and Tax. `npm test` passes 3 of 3.\n\nNothing is committed yet. Say the word if you want a commit or PR.",
+ "diff": "diff --git a/src/cli.js b/src/cli.js\nindex 72aad4c..ba9a505 100644\n--- a/src/cli.js\n+++ b/src/cli.js\n@@ -8,4 +8,4 @@ const t = invoiceTotals(order.items, order);\n console.log(`Subtotal: ${formatCents(t.subtotal)}`);\n if (t.discount) console.log(`Discount: -${formatCents(t.discount)}`);\n if (t.tax) console.log(`Tax:      ${formatCents(t.tax)}`);\n-console.log(`Totall:   ${formatCents(t.total)}`);\n+console.log(`Total:    ${formatCents(t.total)}`);\n",
+ "notes": [
+  "The demo app's README names the planted bug. That paragraph was removed from the copy before the run, so the agent had to find the cause itself."
+ ]
+}

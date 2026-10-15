@@ -20,7 +20,12 @@ export default async function Page(props: PageProps<'/[[...slug]]'>) {
   const fromRepo = generated.has(page.slugs[0]) && page.slugs.length > 1;
 
   return (
-    <DocsPage toc={page.data.toc} full={page.data.full} footer={{ children: <PageFoot /> }}>
+    <DocsPage
+      toc={page.data.toc}
+      full={page.data.full}
+      breadcrumb={{ enabled: false }}
+      footer={{ children: <PageFoot /> }}
+    >
       <header className="ss-page-head" data-home={home || undefined} data-section={page.slugs[0]}>
         {eyebrow && <p className="ss-eyebrow">{eyebrow}</p>}
         <DocsTitle>{home ? 'shipstack' : page.data.title}</DocsTitle>

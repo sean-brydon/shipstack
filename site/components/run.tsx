@@ -49,11 +49,10 @@ function Meta({ label, children }: { label: string; children: ReactNode }) {
   );
 }
 
-function Header({ run, fixture }: { run: RunRecord; fixture: boolean }) {
+function Header({ run }: { run: RunRecord }) {
   return (
     <header className="ss-run-head">
       <div className="ss-run-badges">
-        {fixture && <span className="ss-run-badge" data-kind="fixture">fixture</span>}
         {run.command && <span className="ss-run-badge" data-kind="command">{run.command}</span>}
         {run.playbook && <span className="ss-run-badge">{run.playbook}</span>}
       </div>
@@ -113,14 +112,23 @@ function Step({ step }: { step: RunStep }) {
   return <div className="ss-run-text">{md(step.text)}</div>;
 }
 
-// Consecutive steps from one agent become one group.
-function groups(steps: RunStep[]) {
-  const out: { agent: string; steps: RunStep[] }[] = [];
+// Consecutive main-agent steps become one group. Each subagent's steps all
+// go in one group where it first appears, so reviewers running in parallel
+// read as three blocks, not dozens of interleaved one-step slivers.
+type Group = { agent: string; steps: RunStep[] };
+
+function groups(steps: RunStep[], main: string) {
+  const out: Group[] = [];
+  const bySub = new Map<string, Group>();
   for (const s of steps) {
-    const agent = s.agent || 'main';
+    const agent = s.agent || main;
     const last = out.at(-1);
-    if (last && last.agent === agent) last.steps.push(s);
-    else out.push({ agent, steps: [s] });
+    const g = agent === main ? (last?.agent === main ? last : undefined) : bySub.get(agent);
+    if (g) g.steps.push(s);
+    else {
+      out.push({ agent, steps: [s] });
+      if (agent !== main) bySub.set(agent, out.at(-1)!);
+    }
   }
   return out;
 }
@@ -169,13 +177,12 @@ export async function Run({ id }: { id: string }) {
   const run = await loadRun(id);
   if (!run) return <Missing id={id} />;
 
-  const fixture = run.fixture === true || id.startsWith('_');
   const models = new Map((run.agents ?? []).map((a) => [a.label, a.model]));
   const main = run.agents?.[0]?.label ?? 'main';
 
   return (
-    <section className="ss-run not-prose" aria-label={`Recorded run: ${run.title}`} data-fixture={fixture || undefined}>
-      <Header run={run} fixture={fixture} />
+    <section className="ss-run not-prose" aria-label={`Recorded run: ${run.title}`}>
+      <Header run={run} />
 
       {run.prompt && (
         <div className="ss-run-prompt">
@@ -190,8 +197,8 @@ export async function Run({ id }: { id: string }) {
       )}
 
       <ol className="ss-run-steps">
-        {groups(run.steps ?? []).map((g, i) =>
-          g.agent === main || g.agent === 'main' ? (
+        {groups(run.steps ?? [], main).map((g, i) =>
+          g.agent === main ? (
             <li key={i} className="ss-run-group" data-main="">
               {g.steps.map((s, j) => (
                 <Step key={j} step={s} />
@@ -199,7 +206,7 @@ export async function Run({ id }: { id: string }) {
             </li>
           ) : (
             <li key={i} className="ss-run-group" data-sub="">
-              <details open className="ss-run-sub">
+              <details open={g.steps.length <= 8} className="ss-run-sub">
                 <summary>
                   <ChevronRight className="ss-run-chevron" aria-hidden="true" />
                   <Bot className="ss-run-sub-icon" aria-hidden="true" />
@@ -244,5 +251,38 @@ export async function Run({ id }: { id: string }) {
         Recorded from a real <code>claude -p</code> session. Costs at list API prices.
       </p>
     </section>
+  );
+}
+
+// The runs index: one row per recording, its numbers read from the run file.
+export async function RunTable({ runs }: { runs: { id: string; href: string; label: string }[] }) {
+  const rows = await Promise.all(runs.map(async (r) => ({ ...r, run: await loadRun(r.id) })));
+  return (
+    <table>
+      <thead>
+        <tr>
+          <th>run</th>
+          <th>command</th>
+          <th>environment</th>
+          <th>duration</th>
+          <th>cost</th>
+          <th>turns</th>
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map(({ id, href, label, run }) => (
+          <tr key={id}>
+            <td>
+              <a href={href}>{label}</a>
+            </td>
+            <td>{run?.command ? <code>{run.command}</code> : null}</td>
+            <td>{run ? (run.berth ? 'with berth' : 'without berth') : 'not recorded'}</td>
+            <td>{duration(run?.duration_s)}</td>
+            <td>{run?.cost_usd !== undefined ? `$${run.cost_usd.toFixed(2)}` : null}</td>
+            <td>{run?.turns}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
   );
 }

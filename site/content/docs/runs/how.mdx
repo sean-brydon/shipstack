@@ -1,0 +1,16 @@
+---
+title: /how
+description: A question about how berth's visual diff picks its baseline, answered from the code by /how.
+---
+
+[`/how`](/skills/how) explains how a piece of a codebase works, with file and line references. This run asks it about [berth](/berth)'s own code, read-only, in plan mode.
+
+<Run id="how" />
+
+## What to notice
+
+- **It took the skill's simple path.** One question about one command, so no Haiku explorers: a single Opus explainer at `xhigh` read the code and wrote the answer. That explainer made 34 tool calls. At $1.34 and under 4 minutes, this is the most expensive run here.
+- **The answer comes first.** One fallback, its two conditions, and the lines that decide it (`internal/box/shots.go:314-352`), then the test that pins it.
+- **It names what doesn't exist.** No auto-start of main, no merge-base baseline, no fallback to `accepted`. That heads off the guesses a reader would make.
+- **Read versus inferred is labeled.** The gotchas about the TCP-only liveness check are marked as following from the code, not tested.
+- **One step skipped without saying so.** On a berth box the skill asks for a flow diagram to be registered as a berth artifact. The run left the Mermaid as a code block in the reply and didn't mention it.

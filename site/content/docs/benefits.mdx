@@ -62,7 +62,7 @@ A denied call is treated as an answer: logged, skipped and reported, never retri
 The rigor is not free. Subagents, review panels and proof all spend tokens.
 
 - **A feature run costs more than a plain session.** We estimate 2 to 4 times a plain Claude Code session for a feature. This is an estimate, not a measurement. Run `cost.py` on your own sessions to see your number.
-- **The trivial lane avoids most of it.** A small edit gets no subagents and no panel.
+- **The trivial lane avoids most of it.** A small edit gets no subagents and no panel. In the [recorded runs](/runs), the typo fix cost $0.22 and the one-line bug fix $0.40, while the three-model `/interrogate` panel cost $6.27.
 - **Reading roles on Haiku cut the biggest fan-out.** See the eval above.
 - **You can turn it down.** A smaller budget in `/setup-shipit`, cheaper families in the code roles, `inherit` for a role, or a shorter panel list. Save `/shipit` for work that needs rigor.
 
