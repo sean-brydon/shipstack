@@ -1,0 +1,43 @@
+---
+name: correct
+description: "Find the mistakes agents keep repeating in this repo and make each one impossible. Try architecture first, then types, then a lint or hook whose error names the fix, then a test, and write memory or docs last. Prove each check fails on a real past mistake. Repeat this each time the operator corrects you. Use for /correct."
+disable-model-invocation: true
+---
+
+# Correct
+
+The operator keeps correcting agents in this repo for the same mistakes. Change the repo so the next agent can't make them.
+
+Assume every contributor is an agent that sees only the files it opened, copies the nearest example, and takes the shortest path that compiles. Design the repo so a change that looks right from one file is right for the whole repo.
+
+## Find the mistake classes
+
+First, read recent commits, reverts, review comments, agent instruction files (`CLAUDE.md`, `AGENTS.md`, `~/.claude/CLAUDE.md`), and comments that explain workarounds. Then read the operator's corrections where they were made:
+
+- **Project memory.** `~/.claude/projects/<slug>/memory/MEMORY.md` and its files. Each `feedback` memory is a correction the operator already gave once.
+- **Transcripts.** The project's chats in `~/.claude/projects/<slug>/*.jsonl`. Pull the operator's own turns with the filter in `~/.claude/skills/recall/references/transcripts.md` and look for corrections ("no, …", "I said …", "don't …", "again"). Stay inside this project's slug and its worktrees' slugs. For more than a few weeks of chats, fan the reading out to `Explore` subagents, one slice each, that return the corrections with session ids and quotes, not the transcripts.
+
+Group the mistakes into classes. A class counts once it has happened twice.
+
+## Fix each class at the highest level that works
+
+1. **Eliminate it with architecture.** Give each piece of state one owner and each task one supported way. Hide internals so the wrong import fails. Replace hand-synced lists with one source of truth. Delete old ways and dead code an agent would copy.
+2. **Enforce it with types so the bad state can't be written.** If bad code still compiles, add a lint or CI check whose error names the file, type, or function to use instead. If the pattern is already common, fail only when a change adds more.
+3. **Gate the action with a hook when the mistake is something an agent does, not code it writes.** A command it runs, a push, a file it edits that it must not, a step it skips before stopping. Two kinds, and the error names the fix in both:
+   - A Claude Code hook in the repo's committed `.claude/settings.json`. A `PreToolUse` hook on the tool (`Bash`, `Edit`, `Write`) can refuse the call, and what it prints reaches the agent. A `Stop` hook can refuse to end the turn until a check passes. The **update-config** skill writes and debugs them.
+   - A berth hook (the **berth-hooks** skill) when the repo runs under berth. A `before:` hook in `.berth/config.json` refuses a berth action (`before:exec`, `before:session.send`, `before:worktree.create`, …) for every agent on the box, whatever its harness.
+   A hook only catches agents whose session loads it. A lint or CI check catches everyone, so prefer level 2 when the mistake shows in the diff.
+4. **Test the behavior.** Fix or delete any test that would still pass if every function it calls returned nothing (the **Test Behavior, Not Implementation** principle, `~/.claude/skills/shipit/principles/test-behavior-not-implementation.md`).
+5. **Write memory, docs, or agent rules last, only for judgment calls.** Nothing fails when an agent skips them. A Claude Code memory file in `~/.claude/projects/<slug>/memory/` (indexed in `MEMORY.md`, which every session in the project loads) reaches the next agent here without being opened, so it beats a doc for a local preference. It lives on this machine only. A rule every contributor needs goes in `CLAUDE.md` or `AGENTS.md`, which ship with the repo.
+
+## Fix and prove
+
+Then fix the most frequent classes now, one commit each. Prove each new check fails on a real past mistake: check out the commit that made it and run the check, or replay the exact command against the hook and show the refusal. Run the same command locally and in CI. Exceptions go on the offending line with a reason, an expiry date, and a human's approval.
+
+## Keep the rule table
+
+Last, keep a table in the agent instruction file (`CLAUDE.md` or `AGENTS.md`) that pairs each rule with what enforces it: the level, the enforcer (file and name of the lint, type, hook, or test), and the past mistake it was proven against. When the operator corrects you, fix the mistake and add the rule. If the rule was already there and nothing enforces it, that's a repeat, so fix it at the highest level in the same change. Drop a rule once its mistake can't happen.
+
+Show the table as an artifact so the operator reviews it at a glance: a CSV (rule, level, enforcer, proven against, status) registered with the **berth-artifacts** skill inside berth, else the `Artifact` tool (load **artifact-design** first) or a markdown table in the reply. Say which commits and chats the evidence came from.
+
+**Reply:** each class with its evidence (commits, review comments, memory files, chat session ids), the level you picked, and why a higher level didn't work. Then the rule table artifact.

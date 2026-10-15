@@ -1,0 +1,26 @@
+### Eval
+
+**You own the experiment design. Plan, blind, run, synthesize.**
+
+**Non-negotiables for blinding:**
+
+- No `eval`, `test`, `judge`, `experiment`, `rubric`, `score`, `compare`, `benchmark`, `candidate`, or `arena` in any directory, file, worktree, branch, or prompt the candidate sees.
+- The candidate prompt looks like an organic user request. State the goal, not the meta.
+- No chain-eliciting cues. Don't ask the candidate to list which skills, principles, or files they applied. Ask for design notes generally and grade chain-following from code shape, not self-report.
+- Sanitize directory and slug names. Use project-shaped names a user might pick.
+- Don't tell the candidate other candidates exist.
+- The judge can know it's judging but sees outputs by sanitized label only, never by model name.
+- Comparing two variants: one judge scores both sets in a single pass on one scale, blind to which set each came from.
+
+**Steps:**
+
+1. **Frame.** State what variant is under test and what behavior counts as success. Write the rubric (3-6 concrete criteria) for the judge only. Hold it back from candidates. Also list the files a candidate following the chain should open (the skills, principles, or references the variant routes to). That list grades step 6.
+2. **Set up sanitized environments.** Per-candidate working dir with the variant in place. Plant any context an organic task would have: a project skeleton, the skills the candidate would naturally read. On berth, a berth task per candidate gives each its own worktree (see the **berth-orchestrate** skill), named like a real branch. Without berth, a sanitized dir per candidate outside this repo.
+3. **Author one organic prompt.** What a user would type. No leakage of what's being measured.
+4. **Spawn N parallel candidates** on different models per the **arena** skill's Phase B (`~/.claude/skills/arena/SKILL.md`). Each works in its own sanitized dir. Same prompt to each. Pick each subagent's `effort` for the job, per the Subagents section of `~/.claude/skills/shipit/SKILL.md`. Different models means different families (`opus`, `sonnet`, `fable`, and `codex` when configured in `~/.claude/shipit/models.md`). On berth, start each task with its agent and model and end your turn. Each reports back when it finishes. Without berth, use the Agent tool, or `claude -p --model <model>` run from the candidate's dir in a background Bash so its transcript lands under that dir.
+5. **Spawn one blinded judge** on a different model family per the **arena** skill's Phase C. Judge sees outputs by sanitized label and the rubric, never a model name. Have it return a score per criterion per label, not only a verdict.
+6. **Verify the chain from transcripts, not self-report.** Claude Code keeps transcripts as JSONL under `~/.claude/projects/<cwd-slug>/` (the cwd with every non-alphanumeric character replaced by `-`, per `~/.claude/skills/recall/references/transcripts.md`). An Agent tool subagent's transcript is under the parent session's folder, `<session-id>/subagents/agent-<id>.jsonl`. A candidate run in its own dir or berth worktree has its own `<cwd-slug>` folder. Read only the transcripts of the candidates you started. Do not glob across `~/.claude/projects/*/`. That crosses workspace boundaries and reads private chats from unrelated projects. Look at which files each candidate actually opened (its `Read`, `Grep`, and `Bash` tool calls). Grade chain-following from the files it really read plus the shape of the code, never from the candidate's own claims.
+7. **Read every candidate output yourself** end to end. Compare to the judge's verdict. Disagreement means a model is biased or the rubric is ambiguous. Synthesize.
+8. **Show the results.** Two artifacts. The judge's scores as a `berth.chart` (a `heatmap` with the criterion as `x`, the sanitized label as `row`, the score as `z`, or a grouped `bar` when there are few criteria), and the chain matrix from step 6 as a CSV (label, each expected file opened yes or no, files opened that were not expected). Add the model behind each label only after judging is done. Inside berth, register both with the **berth-artifacts** skill. Outside berth, publish them with the `Artifact` tool (load the **dataviz** and **artifact-design** skills first), or markdown tables in the reply. Each names the prompt, the rubric, and the run it came from.
+
+**Reply:** variant under test, rubric, per-candidate notes, judge's verdict, the score chart and chain matrix, your synthesis, and a recommendation for whether to promote the variant.
