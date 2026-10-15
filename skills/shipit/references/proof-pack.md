@@ -2,6 +2,18 @@
 
 The evidence that a change works, built before you say done and before you open a PR. It is for a reader who won't run anything: they look at it and believe the claim, or they see exactly where it falls short.
 
+## Size it to the change
+
+| change | proof |
+|---|---|
+| a nit: typo, copy, config value, comment, dependency bump | the one check that covers it, with its command and result |
+| backend: logic, API, data, CLI | the repo's checks plus one real run of the changed path (a test that hits it, a request and its response, a CLI run, a log line) |
+| anything that shows on a screen | screenshots in light and dark, and the visual diff |
+| a number | a chart of before and after with its command |
+| docs only | the docs build, or the rendered page |
+
+A one-line Proof section is fine when one line is the honest proof. "Nothing to prove: README wording only" is fine too, when true. The point is that proof is stated on purpose.
+
 ## What goes in it
 
 Pick every row that applies to the change. A row that applies but can't be produced stays in the pack as a gap, with the reason.

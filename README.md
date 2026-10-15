@@ -28,9 +28,25 @@ Then, in a new Claude Code session:
 
 shipit expects Claude Code's auto permission mode for long runs. `skills/shipit/references/auto-mode.md` has what auto mode blocks, how shipit behaves when a call is denied, and the one setting worth adding (`autoMode.environment` naming the repos you push to).
 
+### Optional: enforce the proof rule
+
+`skills/shipit/hooks/require-proof.py` is a Claude Code `PreToolUse` hook. It refuses `gh pr create` when the PR body has no `## Proof` section with something under it. One line is enough for a nit. Turn it on by adding this to `~/.claude/settings.json` under `hooks`:
+
+```json
+"PreToolUse": [
+  { "matcher": "Bash", "hooks": [ { "type": "command", "command": "python3 -I ~/.claude/skills/shipit/hooks/require-proof.py" } ] }
+]
+```
+
+Its cases run with `python3 -I skills/shipit/hooks/require-proof.test.py`.
+
+### Cost receipt
+
+`python3 -I ~/.claude/skills/shipit/scripts/cost.py` prints what the current session and each of its subagents cost at list API prices, by agent and by model. `/shipit` ends long runs with it. `--csv out.csv` writes the rows. Output tokens are a floor (hidden thinking isn't in transcripts), and on a subscription the dollars are usage, not a bill.
+
 ## What's in it
 
-- **`/shipit`**, the router. 26 playbooks, grouped as thinking (ideation, investigation, research), building (feature, bug fix, refactoring, prototype, design audit, visual parity), measuring (perf, hillclimb, runtime and trace forensics, eval), delivering (opening a PR, babysit, shipping, multi-phase plan), running long (autonomous run, orchestrate, autopilot, session pickup, pause safely), and housekeeping (authoring a skill, worktree cleanup).
+- **`/shipit`**, the router. 22 playbooks, grouped as thinking (ideation, investigation, research), building (feature, bug fix, refactoring, prototype, design audit, visual parity), measuring (perf, hillclimb, runtime and trace forensics, eval), delivering (opening a PR, babysit, shipping), running long (autonomous run, session pickup, pause safely), and housekeeping (authoring a skill, worktree cleanup).
 - **28 skills you can type directly.** `/how`, `/why`, `/teach`, `/recall`, `/ketchup` to understand. `/architect`, `/arena`, `/swarm`, `/interrogate`, `/blast-radius` to design and review. `/tdd`, `/benchmark-checklist`, `/no-comments`, `/unslop`, `/technical-writing` to build and clean. `/reflect`, `/correct`, `/automate-me`, `/show-me-your-work`, `/figure-it-out`, `/create-verification-skill` to improve the stack itself. `/shipit-help` lists them all.
 - **24 principles** in `skills/shipit/principles/`. They are files the router indexes, not skills, so they cost no context until one applies.
 - **2 agents.** `shipit-agent`, the delegate every playbook spawns, and `comment-sicko`, the read-only comment reviewer.
@@ -53,7 +69,7 @@ skills/<name>/SKILL.md          each skill, linked to ~/.claude/skills/<name>
 skills/shipit/playbooks/        the playbooks
 skills/shipit/principles/       the principles
 skills/shipit/references/       proof pack, review-bot triage, auto mode
-skills/shipit/scripts/          watch-pr, orch, check-plan, worktree-audit (bun; `bun test` there)
+skills/shipit/scripts/          watch-pr, worktree-audit (bun; `bun test` there)
 agents/                         linked to ~/.claude/agents
 docs/guide/                     a walkthrough, start at docs/guide/README.md
 docs/porting.md                 the pstack → shipit mapping, for re-syncing with upstream

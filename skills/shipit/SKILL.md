@@ -17,13 +17,29 @@ If the user says "stay in shipit mode", keep applying this file on every later t
 1. Read `~/.claude/shipit/models.md` if it exists. It overrides the model defaults in **Subagents**. A missing file or line means the default.
 2. Check for berth: any `BERTH_*` env var, `berthd` or `berth` on PATH, or `mcp__berth__*` tools. With berth, the berth steps below apply. Without it, take the fallback in the same step.
 3. Read the memories Claude Code loaded for this project. A saved rejection ("don't X", "never Y", "parked") is a constraint, not a preference. Never re-pitch, re-add or route around it. If the task seems to need a rejected thing, say so and stop that part.
-4. Match the task to a playbook (**Playbooks**). Open the todo list.
+4. Size it. A trivial task takes the **Trivial lane** below and skips the rest of this file. Anything else matches a playbook (**Playbooks**) and opens the todo list.
+
+## Trivial lane
+
+A task is trivial when all of these hold:
+
+- The diff is small and local: a typo, a copy or config value, a one-line fix, a rename inside one file, a dependency bump.
+- It adds no behavior, API, data shape or migration.
+- It is reversible, and the user didn't ask for rigor.
+
+Words like "quick", "just", "nit" or "tiny" are a hint, not proof.
+
+1. Make the change.
+2. Run the one check that covers it: the nearest test, lint, typecheck or build. If the text shows on a screen, one screenshot.
+3. Reply in two or three lines: what changed, the check's command and result. Commit or open a PR only if asked. The PR's Proof section is that one check.
+
+No todo list, no how or architect, no subagents, no artifact, no principle citations. Escalate the moment it grows: it touches more than you expected, its check fails twice, or it changes behavior someone depends on. Say so in one line and switch to the matching playbook.
 
 ## Non-negotiables
 
 The Principles section grounds every trigger. In your reply, name each principle that shaped a decision and the specific choice it changed. Cite only principles whose file you read this session.
 
-- **No proof, no done.** Before you say done and before you open a PR, build the proof pack (`references/proof-pack.md`). It holds evidence the user can look at: screenshots in light and dark for UI, before/after with a visual diff, numbers as a chart with the command that produced them, the checks you ran with their output. "It compiles" and "tests pass" are inputs to proof, not proof. If you can't produce it, say what's missing and why. Don't claim done.
+- **No proof, no done.** Before you say done and before you open a PR, build the proof pack (`references/proof-pack.md`). It holds evidence the user can look at: screenshots in light and dark for UI, before/after with a visual diff, numbers as a chart with the command that produced them, the checks you ran with their output. "It compiles" and "tests pass" are inputs to proof, not proof. If you can't produce it, say what's missing and why. Don't claim done. Size the proof to the change: a nit's proof is the one check that covers it, a backend change's is its checks plus one real run of the changed path (a test that hits it, a request and its response, a log line), and screenshots are only for what shows on a screen.
 - **Show, don't tell.** A number, a comparison, a before/after, options to choose between, a coverage matrix, a decision log or a plan to approve goes out as an artifact. In berth that's the **berth-artifacts** skill. Outside it, the `Artifact` tool (load **artifact-design**, and **dataviz** for any chart) when it's worth a page, else a table or Mermaid block in the reply. Every artifact names its data source so it can be rerun. A one-line answer needs no artifact.
 - **Ideas before code.** A prompt framed as an idea or open question ("I want to…", "what if we…", "I wonder if…", "help me plan", "no code") routes to the **Ideation** playbook. Present real options with a recommendation, in an artifact, and stop for the pick. Don't build on exploratory framing.
 - **Nontrivial change, architecture decision, or "are we sure?"** Use the **how** skill.
@@ -44,7 +60,7 @@ The Principles section grounds every trigger. In your reply, name each principle
 - **Asked to land or ship a green stack.** Use the **Shipping** playbook. Green is not safe. Nothing merges before an independent per-PR verdict.
 - **Review bots or `/code-review` commented.** Take a skeptical posture. They catch real bugs and also file non-issues. Assess each on its merits and dismiss noise with a concrete reason. Triage per `references/review-bot-triage.md`.
 - **Broken skill mid-task.** Fix it in its own PR. Don't block. Don't silently work around it.
-- **Long, autonomous or multi-phase work, or anything the user steps away from** ("while I'm gone", "no stopping until done", `/loop`, `/goal`) needs a decision trail via the **show-me-your-work** skill. Commit it when stakes need an auditable record. Keep it local otherwise.
+- **Long or autonomous work, or anything the user steps away from** ("while I'm gone", "no stopping until done", `/loop`, `/goal`) needs a decision trail via the **show-me-your-work** skill. Commit it when stakes need an auditable record. Keep it local otherwise.
 
 ## Principles
 
@@ -146,6 +162,7 @@ Write the reply clean as you draft it. A cleanup pass after drafting does not re
 - **Link the proof.** The proof pack's artifacts, screenshots and PR go in the reply as links. PR links as `https://github.com/<owner>/<repo>/pull/<number>`, and refer to PRs by number after that.
 - **Never fabricate a link, citation, number or transcript reference.** Link only what you produced or read this session.
 - **Every claim carries its evidence or its label in the same sentence.** Measured, inferred or guess. Never hand the human a check you could run.
+- **Cost receipt.** A run that spawned subagents or ran long ends with its cost: run `python3 -I ~/.claude/skills/shipit/scripts/cost.py` and put its total line in the reply. Add its table as an artifact when more than a handful of agents ran. It prices at list API rates, so on a subscription it is usage, not a bill.
 - **Status checks get a status.** "How's it going?" gets what's done, what's running, what's next, what's blocked, with the current artifact link. No essay.
 
 ## Comments
@@ -156,7 +173,7 @@ Comments follow the same rule as the reply. Keep a comment only for a non-obviou
 
 Open a todo list whose first items are the matched playbook's steps, copied in verbatim, before any task-specific todos. A step you choose not to do stays in the list with a one-line `skip: <reason>`. Open the playbook's full steps at `playbooks/<title>.md`, title in kebab case, unless the entry names its file.
 
-A large or cross-cutting effort, or work the user steps away from to trust later, routes to the **figure-it-out** skill even when a narrower playbook fits. Use **figure-it-out** whenever no playbook fits. A standing multi-day program routes to **Orchestrate** instead.
+A large or cross-cutting effort, or work the user steps away from to trust later, routes to the **figure-it-out** skill even when a narrower playbook fits. Use **figure-it-out** whenever no playbook fits.
 
 **Thinking**
 
@@ -186,14 +203,10 @@ A large or cross-cutting effort, or work the user steps away from to trust later
 - **Opening a PR.** Invoked at the end of every building playbook. Requires the proof pack.
 - **Babysit.** Drive a PR to merge-ready: conflicts, review threads, CI.
 - **Shipping.** Independently verify green PRs, then land the verified ones.
-- **Multi-phase or multi-PR plan.** Work that spans phases or PRs. File `playbooks/multi-phase-plan.md`.
 
 **Running long**
 
 - **Autonomous run.** A long task driven to completion without stopping.
-- **Orchestrate.** A standing project under one coordinator: multi-day, many PRs, fleets of agents.
-- **Autopilot-full.** A queue of independent PRs run to merged, one owner per PR.
-- **Autopilot-stack.** A queue of changes built and verified, delivered for the user to review and land.
 - **Session pickup.** Resume or take over another agent's in-flight work.
 - **Pause safely.** Suspend in-flight work cleanly so it can be resumed.
 

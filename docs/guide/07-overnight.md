@@ -71,44 +71,32 @@ Before the skill hands back its summary, it spawns a reviewer on a different mod
 
 ## When the night holds a queue, not a task
 
-The contract above drives one task to one finish condition. Some nights hold more, a queue of independent changes or a whole program. Three playbooks scale the same trust up. On a berth box, every owner and every verifier in them is its own berth task, with its own worktree, port, and environment, reporting back to the coordinator when it finishes. Without berth, they're subagents in their own git worktrees.
-
-[Autopilot-full](../../skills/shipit/playbooks/autopilot-full.md) runs a queue of independent PRs to merged. Each PR gets one owner agent that carries it from build through merge, and no owner merges on its own verdict. A swarm of fresh verifiers starts a round at the owner's code-ready head and again at every later push that changes the patch. Only a clean verdict on the patch that merges authorizes the merge:
+The contract above drives one task to one finish condition. Some nights hold more, a queue of independent changes. Do them one at a time. Each goes through Feature or Bug fix and then Opening a PR, so each lands as its own PR off trunk with its own proof:
 
 ```text
-/shipit full autopilot on this queue. each item is independent. i want them merged by morning.
+/shipit these five changes are independent. do them one at a time, open a PR for each, and keep a decision log. i'll review in the morning.
 ```
 
-[Autopilot-stack](../../skills/shipit/playbooks/autopilot-stack.md) runs the same owner loop but ships nothing. You wake up to one linear base-branch stack with a verifier's verdict on every link, and you review and land it yourself. Pick it over Autopilot-full when the changes are coupled, or when you want your own eyes on the work before anything merges:
+For a program too big for one session, such as a migration that spans many PRs or days, the **figure-it-out** skill designs the run first. It sets the finish condition, what fans out, and how each piece is verified.
 
-```text
-/shipit autopilot these five changes but stack them, don't ship. i'll land the stack in the morning.
-```
+## Run many tasks in parallel on a box
 
-[Orchestrate](../../skills/shipit/playbooks/orchestrate.md) is for a program that outlives any single agent: multi-day, many stacked PRs, fleets of subagents under one standing coordinator session. The coordinator authors briefs, collects what its subagents finish, keeps the lowest unmerged PR green, and never writes code itself. It's deliberately heavy machinery. If one agent could finish the work in a session, the playbook itself routes you back to the overnight contract above:
-
-```text
-/shipit orchestrate the store migration. own it until every package is converted and merged. i'll check in twice a day.
-```
-
-## Run many programs in parallel on a box
-
-A berth box is where this scales. Give the coordinator its own session on the box, and it hands each piece of work to a berth task through the **berth-orchestrate** skill. Every task gets its own worktree, port, and environment. The box keeps running when your laptop is closed, and Shipyard shows you every agent, its status, and the ones waiting on you. That's the shape the Orchestrate playbook expects. Start your prompts to the coordinator with `/shipit`, and the agents it hands work to follow the playbooks.
+A berth box is where this scales. Give each body of work its own session on the box, and hand each piece to a berth task through the **berth-orchestrate** skill. Every task gets its own worktree, port, and environment. The box keeps running when your laptop is closed, and Shipyard shows you every agent, its status, and the ones waiting on you. Start your prompts with `/shipit`, and the agents it hands work to follow the playbooks.
 
 A few habits help:
 
-- Give each body of work its own coordinator, such as a feature, a migration, a perf push, or a tech-debt cleanup. Several can run side by side on one box.
-- Point the coordinator at related sessions, finished ones included, with `/recall`. They become context for the work.
-- Give each PR a verification swarm before it merges, and let Autopilot-stack or Autopilot-full carry the queue.
-- Ask the coordinator for a plan backed by data, and have it answer open questions with prototypes before it asks you. Inside berth, the plan to approve and the progress of the queue show up as artifacts the coordinator rewrites as work lands.
+- Give each body of work its own session, such as a feature, a migration, a perf push, or a tech-debt cleanup. Several can run side by side on one box.
+- Point the session at related sessions, finished ones included, with `/recall`. They become context for the work.
+- Give each PR a verification pass before it merges.
+- Ask for a plan backed by data, and have it answer open questions with prototypes before it asks you. Inside berth, the plan to approve and the progress of the queue show up as artifacts rewritten as work lands.
 
 One prompt can carry a whole program, from research through execution:
 
 ```text
-/shipit refactor this repo so its architecture is more agent friendly. use /correct and /architect on past commits and review comments to find the mistakes agents make most here. use /recall for context from past sessions. answer open questions with prototypes instead of asking me. come back with a plan backed by real data. once i approve it, run it with autopilot-stack or autopilot-full, and ask me which.
+/shipit refactor this repo so its architecture is more agent friendly. use /correct and /architect on past commits and review comments to find the mistakes agents make most here. use /recall for context from past sessions. answer open questions with prototypes instead of asking me. come back with a plan backed by real data. once i approve it, run it with /figure-it-out.
 ```
 
-Without a box, the same playbooks run on your laptop with subagents in worktrees. They stop when the laptop sleeps, and a laptop runs only a handful of worktrees at once.
+Without a box, the same work runs on your laptop with subagents in worktrees. It stops when the laptop sleeps, and a laptop runs only a handful of worktrees at once.
 
 ## Let loops start themselves
 

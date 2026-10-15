@@ -74,7 +74,7 @@ automate-me miners: sonnet
 
 Tell the user the file was written, show the final table, and say that skills read it at the start of each task, so it applies from the next task on. Re-running this skill updates it. When a default changes in a later shipit version, a file written before the change still pins the old value. Delete that line, or rerun this skill, to pick up the new default.
 
-Then mention permissions once. Long runs (autonomous run, autopilot, orchestrate, `/loop`) work best in Claude Code's auto permission mode, or with an allowlist so routine commands don't stop the run. The `fewer-permission-prompts` skill builds one from the user's own transcripts. Irreversible actions (force-push to shared branches, deploys, data deletion, messages to customers, publishing) still pause for the human in any mode.
+Then mention permissions once. Long runs (autonomous run, `/loop`) work best in Claude Code's auto permission mode, or with an allowlist so routine commands don't stop the run. The `fewer-permission-prompts` skill builds one from the user's own transcripts. Irreversible actions (force-push to shared branches, deploys, data deletion, messages to customers, publishing) still pause for the human in any mode.
 
 ### 7. Offer a verification skill (optional)
 

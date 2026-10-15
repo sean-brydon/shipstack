@@ -44,8 +44,7 @@ Swap in the real paths, skills, and done checks. Informal wording works.
 - `/shipit im going to bed. <goal> in a fresh worktree off <base>. done means <checks>. keep a decision log. don't ask me before committing. /loop until done. if you're truly stuck after a few hours, stop and write up why.` Run it in auto mode.
 - `/show-me-your-work catch me up on what you did last night.` Read its Attention section first.
 - `/ketchup` after a long stretch of background work.
-- `/shipit full autopilot on this queue. each item is independent.`
-- `/shipit autopilot these changes but stack them, don't ship. i'll land the stack.`
+- `/shipit do these changes one at a time. each is independent. open a PR for each.`
 - `/reflect capture what we learned so the next run doesn't repeat it.` Approve only edits that change a future decision.
 - `/correct` after the same correction lands twice.
 - `/bro` restates the last reply in plain words.

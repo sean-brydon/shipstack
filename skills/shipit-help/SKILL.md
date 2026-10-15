@@ -99,7 +99,7 @@ Close calls:
 - `/architect` implements right after it settles the design. Add "with checkpoint" to review the design before it writes code.
 - `/interrogate` reviews the diff. `/blast-radius` looks for breakage outside the diff and proves the one fact that makes the change safe.
 - `/recall` rebuilds context across recent chats. `/ketchup` covers only this chat since the user's last message. Resuming one specific chat or branch is the Session pickup playbook.
-- `/figure-it-out` designs one rigorous run. The Orchestrate playbook runs a program that spans days and many PRs. The Autonomous run playbook drives one task to a finish condition.
+- `/figure-it-out` designs one rigorous run. The Autonomous run playbook drives one task to a finish condition.
 - `/reflect` turns one session's lessons into skill edits. `/correct` makes a repeated mistake in the repo impossible.
 
 Claude Code built-ins that shipit leans on:
@@ -107,7 +107,7 @@ Claude Code built-ins that shipit leans on:
 - `/simplify` cleans up the diff before commit. `/code-review` reviews it locally.
 - `/loop` runs a prompt on an interval or self-paced.
 - The `fewer-permission-prompts` skill builds a permission allowlist. The `update-config` skill writes `settings.json` hooks, which `/correct` uses.
-- shipit has no `/orchestrate` skill. Orchestrate is a `/shipit` playbook. The **berth-orchestrate** skill is different: it is how any agent drives other agents on a berth box.
+- The **berth-orchestrate** skill is how any agent drives other agents on a berth box.
 
 ## The berth layer
 
@@ -115,7 +115,7 @@ When the user runs Claude Code inside berth (Shipyard), shipit uses berth's skil
 
 | Skill | What shipit uses it for | Without berth |
 |---|---|---|
-| **berth-orchestrate** (`~/.claude/skills/berth-orchestrate/SKILL.md`) | A berth task per arena runner, autopilot owner or orchestrate worker, each in its own worktree with its own port, reporting back with a `<berth-notification>` | `Agent` tool with `isolation: "worktree"` |
+| **berth-orchestrate** (`~/.claude/skills/berth-orchestrate/SKILL.md`) | A berth task per arena runner or prototype, each in its own worktree with its own port, reporting back with a `<berth-notification>` | `Agent` tool with `isolation: "worktree"` |
 | **berth-browser** (`~/.claude/skills/berth-browser/SKILL.md`) | Driving the worktree's own page headless to repro a bug or prove a fix | the project's Playwright, or **claude-in-chrome** |
 | **berth-visual-diff** (`~/.claude/skills/berth-visual-diff/SKILL.md`) | Before and after screenshots across widths, light and dark, as proof | screenshots from Playwright or claude-in-chrome |
 | **berth-preview** (`~/.claude/skills/berth-preview/SKILL.md`) | Showing the user the running page beside the chat | a local URL in the reply |
@@ -124,7 +124,7 @@ When the user runs Claude Code inside berth (Shipyard), shipit uses berth's skil
 
 ## Playbooks and principles
 
-Playbooks are step lists inside `/shipit`, not skills, so they have no slash command. They live in `~/.claude/skills/shipit/playbooks/`: investigation, bug-fix, perf-issue, hillclimb, runtime-forensics, trace-forensics, feature, refactoring, prototype, visual-parity, authoring-a-skill, eval, babysit, shipping, autonomous-run, orchestrate, autopilot-full, autopilot-stack, session-pickup, pause-safely, multi-phase-plan, worktree-cleanup, opening-a-pr, ideation, research, and design-audit. More may be added. The Playbooks section of `~/.claude/skills/shipit/SKILL.md` has the current list and when each applies.
+Playbooks are step lists inside `/shipit`, not skills, so they have no slash command. They live in `~/.claude/skills/shipit/playbooks/`: investigation, bug-fix, perf-issue, hillclimb, runtime-forensics, trace-forensics, feature, refactoring, prototype, visual-parity, authoring-a-skill, eval, babysit, shipping, autonomous-run, session-pickup, pause-safely, worktree-cleanup, opening-a-pr, ideation, research, and design-audit. More may be added. The Playbooks section of `~/.claude/skills/shipit/SKILL.md` has the current list and when each applies.
 
 Inside `/shipit`, describing the task picks one, and these phrases name one directly:
 
@@ -132,10 +132,9 @@ Inside `/shipit`, describing the task picks one, and these phrases name one dire
 - "land the stack" runs Shipping.
 - "take over this branch" runs Session pickup.
 - "pause safely" runs Pause safely.
-- "full autopilot on this queue" runs Autopilot-full. "stack them, don't ship" runs Autopilot-stack.
 - "run the eval playbook" runs Eval.
 
-shipit has no planning skill. Claude Code's plan mode works alongside it. For work that spans phases or stacked PRs, asking `/shipit` for a plan runs the Multi-phase plan playbook (`~/.claude/skills/shipit/playbooks/multi-phase-plan.md`), which writes the plan and doesn't implement it. For a design question, the Prototype playbook or `/architect` settles it in code first.
+shipit has no planning skill. Claude Code's plan mode works alongside it. For work that spans phases or many PRs, `/shipit` routes to the **figure-it-out** skill, which designs the run before anything is built. For a design question, the Prototype playbook or `/architect` settles it in code first.
 
 Principles are one-rule files in `~/.claude/skills/shipit/principles/` that `/shipit` reads and cites in its replies. They are not skills, so they have no slash command and cost no context until read. The user steers with the names instead, as in "apply prove it works. show me the real output." The Principles section of the shipit skill lists them.
 

@@ -104,7 +104,7 @@ shipit has no planning skill, on purpose. The best spec is code. When you do wan
 /shipit turn this design into a plan. small verifiable PRs, each with its own verification steps.
 ```
 
-The [Multi-phase plan playbook](../../skills/shipit/playbooks/multi-phase-plan.md) settles any remaining open questions by prototype, then writes one section per PR, each ending in proof that the change works. A passing test suite alone doesn't count as that proof. The plan is the deliverable. The playbook doesn't implement it, and it names which execution playbook should run it next. A plan you have to approve is something to look at, not scroll past. Inside berth it shows up as a notes artifact in Shipyard with the steps, the risks, and the question for you. Outside berth it can be a private claude.ai page through the `Artifact` tool, or plain markdown in the reply.
+For work that spans many PRs, the [figure-it-out](../../skills/figure-it-out/SKILL.md) skill settles any remaining open questions by prototype, then lays out the run with a way to prove each unit works. A passing test suite alone doesn't count as that proof. The plan is the deliverable, and nothing is implemented until you approve it. A plan you have to approve is something to look at, not scroll past. Inside berth it shows up as a notes artifact in Shipyard with the steps, the risks, and the question for you. Outside berth it can be a private claude.ai page through the `Artifact` tool, or plain markdown in the reply.
 
 For a migration, state the bar in the prompt:
 

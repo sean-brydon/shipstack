@@ -111,7 +111,7 @@ automate-me miners: sonnet
 
 shipit is for berth. When berth is available (any `BERTH_*` env var set, or `berthd`/`berth` on PATH, or the `mcp__berth__*` tools are listed), prefer it:
 
-- **Isolated parallel work** (arena runners, autopilot owners, prototypes, orchestrate fleets): a berth task per attempt (`berthd task new <loc>/<name> --agent claude --prompt "…"`, or the `berth_task_new` / `berth_attempts` MCP tools). Each gets its own worktree, port and env, and reports back with a `<berth-notification>`. End your turn, don't poll. See the **berth-orchestrate** skill. Without berth, use the Agent tool with `isolation: "worktree"`.
+- **Isolated parallel work** (arena runners, prototypes): a berth task per attempt (`berthd task new <loc>/<name> --agent claude --prompt "…"`, or the `berth_task_new` / `berth_attempts` MCP tools). Each gets its own worktree, port and env, and reports back with a `<berth-notification>`. End your turn, don't poll. See the **berth-orchestrate** skill. Without berth, use the Agent tool with `isolation: "worktree"`.
 - **Proof on a page**: the **berth-browser** skill (headless browser on the worktree's own dev server), the **berth-visual-diff** skill (before/after across widths), the **berth-preview** skill (show the user the page). Without berth: **claude-in-chrome**, or Playwright the project already has.
 - **Showing results** (a table over ~8 rows, a before/after number, a hillclimb log, a plan to approve): the **berth-artifacts** skill. Without berth: a markdown table in the reply.
 - **Checks in a worktree**: `berthd exec <loc>/<wt> -- <cmd>`.
@@ -131,7 +131,7 @@ The owner of shipit works from evidence: artifacts, charts and data that back a 
 
 ## Permission modes
 
-shipit should run well under Claude Code's auto mode (the classifier approves routine actions, so the agent rarely stops). Long runs (autonomous run, autopilot, orchestrate, `/loop`) assume auto mode or a permission allowlist. Irreversible actions (force-push to shared branches, deploys, data deletion, messages to customers, publishing) still pause for the human, whatever the mode. `skills/shipit/references/auto-mode.md` has what auto mode blocks and how shipit behaves under it.
+shipit should run well under Claude Code's auto mode (the classifier approves routine actions, so the agent rarely stops). Long runs (autonomous run, `/loop`) assume auto mode or a permission allowlist. Irreversible actions (force-push to shared branches, deploys, data deletion, messages to customers, publishing) still pause for the human, whatever the mode. `skills/shipit/references/auto-mode.md` has what auto mode blocks and how shipit behaves under it.
 
 ## Writing
 
