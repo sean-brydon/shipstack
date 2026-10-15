@@ -53,9 +53,9 @@ perf-issue: sonnet
 hillclimb: sonnet
 judgment and prose: opus
 hardest tasks: opus
-how explorer: sonnet
+how explorer: haiku
 how explainer: opus
-why investigators: sonnet
+why investigators: haiku
 why synthesizer: opus
 reflect tooling: sonnet
 reflect judgment, divergent, synthesizer: opus
@@ -66,6 +66,7 @@ verification: sonnet
 architect runners: opus, sonnet
 interrogate reviewers: opus, sonnet, fable
 recall readers: haiku
+source readers: haiku
 automate-me miners: sonnet
 ```
 

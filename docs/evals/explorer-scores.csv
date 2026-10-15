@@ -1,0 +1,10 @@
+question,arm,accuracy,coverage,references,insight,honesty,total,claims_checked,claims_wrong
+notify,sonnet-xhigh,5,5,5,4,5,24,16,0
+notify,haiku-high,4,4,3,2,3,16,11,1
+notify,haiku-xhigh,4,5,4,5,5,23,17,2
+shots,haiku-xhigh,4,5,4,5,4,22,17,2
+shots,sonnet-xhigh,3,5,3,3,4,18,15,1
+shots,haiku-high,5,4,5,3,5,22,15,1
+proxy,haiku-high,4,4,5,3,4,20,13,1
+proxy,haiku-xhigh,5,5,5,5,5,25,16,1
+proxy,sonnet-xhigh,4,5,4,4,4,21,15,1

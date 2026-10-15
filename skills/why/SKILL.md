@@ -51,7 +51,7 @@ Map each available MCP to one evidence category:
 
 Source control is always available through git and `gh`. For the other six, classify using the server name, its instructions, its tool names, and their descriptions. If an MCP could fit more than one category, choose the one matching its primary evidence. Record ambiguous cases in the coverage map. A server that fits none of the seven (a design tool, a browser, a mail client) is not an investigator. Name it in Sources Consulted only if it plausibly held evidence.
 
-Spawn one investigator per category that has a matching MCP, each owning exactly one tool or MCP. Run at most 5 at once (the router's cap, or the user's) and queue the rest, spawning each wave in a single message so it runs concurrently. Don't ask one agent to cover multiple MCPs. `model`: the `why investigators` line, default `sonnet`. They run in the background and notify you when done. End your turn instead of polling.
+Spawn one investigator per category that has a matching MCP, each owning exactly one tool or MCP. Run at most 5 at once (the router's cap, or the user's) and queue the rest, spawning each wave in a single message so it runs concurrently. Don't ask one agent to cover multiple MCPs. `model`: the `why investigators` line, default `haiku`, at the budget's starting effort (not lowered). They run in the background and notify you when done. End your turn instead of polling.
 
 Each investigator's prompt is `references/investigator-prompt.md` filled in, plus:
 - the server name and its exact tool names, with the note that deferred tools must be loaded with ToolSearch (`select:<tool>,<tool>`) before the first call

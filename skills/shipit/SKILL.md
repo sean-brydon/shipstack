@@ -117,11 +117,12 @@ Read the principle's file in full for any principle you apply: `principles/<titl
 | hardest tasks (cross-cutting design, gnarly concurrency, subtle algorithms) | opus | |
 | judgment and prose | opus | |
 | verification | sonnet | stays at its configured effort |
+| reading roles (how explorers, why investigators, recall and source readers) | haiku | keep the budget's starting effort, never lowered |
 | panels (arena, architect, interrogate) | see the skill | different families on purpose |
 
 `inherit` as a value means omit `model` and run on the parent's model. `codex` (opt-in) means run `codex exec` read-only, or a berth task with `--agent codex` on a box.
 
-**Match effort to the job.** The budget in `models.md` (default `large`, which is `xhigh`) sets each role's starting `effort`. Raise it one step, up to `max`, for the hardest or subtlest work. Lower it one step for judgment and two or more for routine work. Change only effort, never the family a role names, so a diverse panel stays diverse.
+**Match effort to the job.** The budget in `models.md` (default `large`, which is `xhigh`) sets each role's starting `effort`. Raise it one step, up to `max`, for the hardest or subtlest work. Lower it one step for judgment and two or more for routine work. Reading roles on Haiku are the exception: they keep the starting effort. A blind eval (2026-10) scored Haiku explorers at xhigh above Sonnet at xhigh for about a fifteenth of the cost, and Haiku at high below both. Change only effort, never the family a role names, so a diverse panel stays diverse.
 
 **Cap the fan-out.** At most 5 subagents or berth tasks running at once, unless the user sets another cap. Queue the rest.
 
