@@ -1,0 +1,17 @@
+---
+title: An ideation
+description: A "what if" about multiple currencies. The Ideation playbook lays out options with a recommendation and stops for your pick.
+---
+
+The prompt is framed as an idea and says "no code yet", so `/shipit` routes to the [Ideation](/playbooks/ideation) playbook. It runs in plan mode, so it can read the code but not change it.
+
+<Run id="ideation" />
+
+## What to notice
+
+- **It measured before it proposed.** It ran the current code with a yen and a dinar order and showed the bugs: ¥500 times 3 prints as `$1650.00`, and KWD 1.235 loses a fils.
+- **Real options, one called out.** Three options with a recommendation. It labeled the cheapest one (a converted total on a USD invoice) gimmicky and said why, instead of offering it as a quick win.
+- **It stopped for the pick.** No code was written. The question tools are not available headless, so its three open questions are in the reply.
+- **The artifact rule was only half met.** It wanted a berth artifact but said plan mode blocks one, so the options went to a plan file under `~/.claude/plans/`. The scoring it quotes (24 out of 25 against 13) lives in that file, not in the reply.
+- **It cited principles it never read.** The reply names five principles, but the run only opened the Ideation playbook. The skill says to cite only principles whose file you read in the session, so those citations are from memory.
+- **Sized to the repo.** It skipped explorer agents because the app is 19 lines of logic: 6 turns, under two minutes, $0.50.

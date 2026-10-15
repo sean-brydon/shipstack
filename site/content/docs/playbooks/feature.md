@@ -1,0 +1,24 @@
+---
+title: "Feature"
+description: "New or changed behavior, built from a named data shape."
+---
+
+**You own the design. Plan, review, verify.** Delegate implementation. Stay in the lead.
+
+1. Run the **how** skill ([`~/.claude/skills/how/SKILL.md`](/skills/how)) over the affected subsystem.
+2. Run the **architect** skill ([`~/.claude/skills/architect/SKILL.md`](/skills/architect)) for parallel design exploration.
+3. Write the throughput checkpoint as four items in the todo list (`TodoWrite`, or `TaskCreate` where that is what the session has). A dimension that genuinely does not apply (single file, no fan-out) keeps its item with `n/a: <reason>` rather than being dropped:
+   - **Blocking first steps.** Gates run before fan-out.
+   - **Independent workstreams.** Disjoint files, services, or layers parallelize. Shared writes serialize.
+   - **Shared mutable state.** Default to splitting the target (the **Separate Before Serializing Shared State** principle, [`~/.claude/skills/shipit/principles/separate-before-serializing-shared-state.md`](/principles/separate-before-serializing-shared-state)). Serialize only for real invariants.
+   - **Smallest safe decomposition.** If one worker is best, name why.
+4. Delegate code-writing to a subagent using your configured feature model (the `feature, refactoring` line in `~/.claude/shipit/models.md`, default `sonnet`) with a specific scope (file paths, named data shape and its organizing structure per the **Model the Domain** principle, [`~/.claude/skills/shipit/principles/model-the-domain.md`](/principles/model-the-domain), a state machine over scattered booleans, a table/registry over branching, a typed model over repeated shape assumptions, chosen before the delegate writes logic, and success criteria). Pick each subagent's `effort` for the job, per the Subagents section of [`~/.claude/skills/shipit/SKILL.md`](/skills/shipit). When the implementation admits multiple valid shapes (error handling, abstraction layer, test structure), delegate via the **arena** skill ([`~/.claude/skills/arena/SKILL.md`](/skills/arena)) instead so the runners surface the alternatives and the cross-judge guards the pick. Mandatory: no skip-with-reason escape, and Laziness Protocol does not override it (the gain is review separation, not lines saved). A subagent forbidden to spawn satisfies this by owning the diff directly with the same review separation. No "standing by" reply that waits on a nested agent. Comments per **Comments**. Surgical edits, re-ground against the source for upstream-derived files. Port shared-primitive improvements to all consumers and verify each. Commit liberally.
+5. Verify on the matching surface. "Inconclusive" or wrong-surface is not a pass. Flag it. For anything that shows on a page, inside a berth worktree, drive the new behavior with the **berth-browser** skill, run the **berth-visual-diff** skill (`berthd shots compare`) so the user sees what changed against main at phone, tablet, and desktop widths, and open it beside them with the **berth-preview** skill. Without berth, drive it with the **claude-in-chrome** skill or the project's own Playwright and take screenshots. For a CLI or TUI, paste the real output.
+6. Rebase into small, ordered commits. Follow-ups are their own PRs off trunk once this one merges, not a stack.
+   Use the **Sequence Work into Verifiable Units** principle ([`~/.claude/skills/shipit/principles/sequence-verifiable-units.md`](/principles/sequence-verifiable-units)), building, verifying, and committing each small unit before the next.
+7. If the design is contested, run the **interrogate** skill ([`~/.claude/skills/interrogate/SKILL.md`](/skills/interrogate)) before shipping.
+8. Run **Opening a PR** ([`~/.claude/skills/shipit/playbooks/opening-a-pr.md`](/playbooks/opening-a-pr)).
+
+Code-coupled work (one feature, one migration) goes to a single owner with the checkpoint inline. That owner fans out internally after the blocking phase. Parent-level fan-out is for slices that produce independent artifacts (audits, cross-subsystem investigations, competing experiments). Rewrite the checkpoint at phase boundaries. Spawn a fresh owner rather than chaining interrupts.
+
+**Reply:** what you built, what you chose and why, the throughput checkpoint, open decisions. Tables for design alternatives. The visual diff or screenshots for any UI change. When the alternatives table is wide or long, make it an artifact with the **berth-artifacts** skill, or an `Artifact` page outside berth.

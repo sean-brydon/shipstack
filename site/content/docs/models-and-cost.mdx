@@ -1,0 +1,109 @@
+---
+title: Models and cost
+description: Which model runs each role, how the budget sets effort, the eval behind the defaults, and how to read the cost receipt.
+---
+
+Each subagent runs on the model its role names, at an effort set by your budget. `/setup-shipit` writes your choices to `~/.claude/shipit/models.md`. A missing line means the default below.
+
+## Roles
+
+| role | default |
+|---|---|
+| `feature, refactoring` | sonnet |
+| `bug-fix` | sonnet |
+| `perf-issue` | sonnet |
+| `hillclimb` | sonnet |
+| `judgment and prose` | opus |
+| `hardest tasks` | opus |
+| `how explorer` | haiku |
+| `how explainer` | opus |
+| `why investigators` | haiku |
+| `why synthesizer` | opus |
+| `reflect tooling` | sonnet |
+| `reflect judgment, divergent, synthesizer` | opus |
+| `arena runners` | opus, sonnet, fable |
+| `arena cross-judge pool` | opus, fable |
+| `swarm workers` | sonnet |
+| `verification` | sonnet |
+| `architect runners` | opus, sonnet |
+| `interrogate reviewers` | opus, sonnet, fable |
+| `recall readers` | haiku |
+| `source readers` | haiku |
+| `automate-me miners` | sonnet |
+
+A value is `opus`, `sonnet`, `haiku` or `fable`. Two more are allowed:
+
+- `inherit` runs the role on your main session's model.
+- `codex` is an opt-in second vendor. It runs `codex exec` read-only, or a berth task with `--agent codex` on a box. `/setup-shipit` only offers it when `codex` is on your `PATH`.
+
+A panel role takes a list, and one runner spawns per entry, so the list length sets the panel size. A diverse panel means different families.
+
+## Budget and effort
+
+Claude Code sets a subagent's model and its effort separately. The budget sets the starting `effort` for every role.
+
+| budget | starting effort |
+|---|---|
+| `unlimited` | `max` |
+| `large` (default) | `xhigh` |
+| `medium` | `high` |
+| `small` | `medium` |
+
+From that start, `/shipit` raises effort one step (up to `max`) for the hardest work, lowers it one step for judgment, and two or more for routine work. Reading roles on Haiku are the exception: they keep the starting effort. Only effort changes, never the family a role names, so a diverse panel stays diverse.
+
+## The eval
+
+The question: should `/how` explorers and other read-only roles run on Haiku instead of Sonnet, and at what effort?
+
+- Three real `/how` questions about a Go codebase: a notification pipeline, a screenshot diff pipeline, an HTTP proxy.
+- Three arms per question: Haiku at `high`, Haiku at `xhigh`, Sonnet at `xhigh` (the old default). 9 runs, all `Explore` subagents, all given the same explorer prompt.
+- One blind judge (Opus) saw reports by label only. It checked at least 8 concrete claims per report against the code, 130 or more in total, and scored accuracy, coverage, references, insight and honesty from 1 to 5 each.
+
+<EvalBars />
+
+| arm | mean score /25 | claims wrong / checked | mean cost per run | mean time |
+|---|---|---|---|---|
+| Haiku `high` | 19.3 | 3 / 39 | $0.017 | 99 s |
+| Haiku `xhigh` | **23.3** | 5 / 50 | $0.040 | 275 s |
+| Sonnet `xhigh` | 21.0 | 2 / 46 | $0.665 | 166 s |
+
+Per question, the judge preferred Sonnet for the notification pipeline (24 against Haiku `xhigh` at 23), Haiku `xhigh` for the diff pipeline (22, tied with Haiku `high`, Sonnet 18), and Haiku `xhigh` for the proxy (25 against Sonnet's 21).
+
+**Decision.** Reading roles (`how explorer`, `why investigators`, `recall readers`, `source readers`) default to Haiku and keep the budget's starting effort instead of being lowered like routine roles. Code delegates, verification and review panels stay on Sonnet or the panel mix.
+
+**Limits.** Three questions, one codebase, one judge. The quality gap between Haiku `xhigh` and Sonnet is within what a different question set could flip. The cost gap, about 15 times, and the effort finding (Haiku `high` clearly weaker) are the robust parts. Transcripts under-record output tokens, so add roughly $0.05 to $0.15 per Sonnet run. Haiku `xhigh` runs went past 100K-token prompts, where Haiku bills at a higher rate; the worst case for that arm is about $0.20 a run, still several times cheaper than Sonnet. `why` investigators were switched on the same reasoning but not measured.
+
+Source: [`docs/evals/2026-10-explorer-models.md`](https://github.com/sean-brydon/shipstack/blob/main/docs/evals/2026-10-explorer-models.md), with raw scores in `explorer-scores.csv` and costs in `explorer-cost.csv`.
+
+## The cost receipt
+
+```sh
+python3 -I ~/.claude/skills/shipit/scripts/cost.py
+```
+
+It reads the current session's transcript and its subagents' transcripts under `~/.claude/projects/` and prints the total, this session's share, each subagent's share, and a split by model, then a table by agent. `/shipit` ends long runs with its total line.
+
+| flag | what it does |
+|---|---|
+| `--session <id>` | price another session instead of the current one |
+| `--csv out.csv` | also write one row per agent to a file |
+| `--all-agents` | list every subagent, not just the top 12 |
+
+It prices at list API rates per million tokens:
+
+| family | input | output | cache read | cache write |
+|---|---|---|---|---|
+| fable | $10 | $50 | $0.25 | $12.50 |
+| opus | $4 | $20 | $0.20 | $5 |
+| sonnet | $2 | $10 | $0.20 | $2.50 |
+| haiku | $0.10 | $0.50 | $0.01 | $0.125 |
+| haiku, prompt over 100K tokens | $0.50 | $2.50 | $0.05 | $0.625 |
+
+Two caveats. Output tokens are a floor, because hidden thinking isn't in transcripts. On a subscription the dollars are usage, not a bill.
+
+## Spending less
+
+- Rerun `/setup-shipit` and pick a smaller budget, or cheaper families in the code roles.
+- Set a role to `inherit` so it runs on your session's model.
+- Shorten a panel list. Each entry runs one subagent.
+- Save `/shipit` for work that needs rigor. Small edits take the trivial lane anyway.

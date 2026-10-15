@@ -1,0 +1,56 @@
+---
+title: Introduction
+description: A skill stack for Claude Code. Type /shipit with a task. It picks the right playbook, does the work, and shows you the proof.
+---
+
+shipstack is a set of skills and agents for Claude Code. You type `/shipit` and a task, and it picks the playbook for that kind of task, copies the steps into the todo list, and runs the other skills as the steps need them. It doesn't call anything done until it has shown you the proof.
+
+## Install
+
+```sh
+git clone https://github.com/sean-brydon/shipstack ~/shipstack
+cd ~/shipstack
+./install.sh
+```
+
+Then start a new Claude Code session and give it a task:
+
+```text
+/shipit the csv export drops its last row. repro first, then fix and verify.
+```
+
+[Getting started](/getting-started) covers `/setup-shipit`, auto mode and your first task.
+
+## What you get
+
+- **The right process for the task.** 22 playbooks, from bug fix to shipping. You describe the task and `/shipit` picks one. You never name it.
+- **Proof before done.** Every change ends with evidence sized to it: the one check for a typo, a real run for a backend change, light and dark screenshots for UI. No proof, no PR.
+- **Small edits stay small.** A typo or a one-line fix takes the trivial lane: one check, a two or three line reply, no subagents.
+- **Cheaper reading, measured.** In a blind eval, `/how` explorers on Haiku at `xhigh` effort scored 23.3 out of 25 against Sonnet's 21.0, at $0.040 a run against $0.665. That is about 15 times cheaper. [See the eval](/models-and-cost#the-eval).
+- **Review from more than one model.** `/interrogate` sends the diff to reviewers on Opus, Sonnet and Fable by default, and `codex` when you turn it on.
+- **A cost receipt.** A run that spawned subagents ends with what it cost, by agent and by model.
+
+[Benefits](/benefits) has the details and the honest costs.
+
+## See it run
+
+[Runs](/runs) shows real recorded sessions, step by step: a trivial fix, a bug fix, an ideation, `/how`, `/why` and `/interrogate`. Each one shows the prompt, every tool call, the final reply, the time and the cost. The trivial fix took 11 seconds and $0.22. The bug fix took under a minute and $0.40. The `/interrogate` panel took about 8 minutes and $6.27, and found five real bugs.
+
+## With or without berth
+
+shipstack is built for [berth](/berth) (Shipyard), which runs coding agents on your own machines. It never needs it. The switch in the sidebar picks which version of the examples you see.
+
+<Berth>
+Parallel attempts each get a berth task with its own worktree, port and environment. They report back with a notification when they finish.
+</Berth>
+
+<NoBerth>
+Parallel attempts each run as a Claude Code subagent with `isolation: "worktree"`, so each writes to its own checkout.
+</NoBerth>
+
+<Cards>
+  <Card title="Getting started" href="/getting-started" description="Install, pick your models, turn on auto mode, run a first task." />
+  <Card title="How /shipit works" href="/how-shipit-works" description="The flow from prompt to proof, the trivial lane, subagents and roles." />
+  <Card title="Playbooks" href="/playbooks" description="The 22 checklists /shipit follows, one per kind of task." />
+  <Card title="Runs" href="/runs" description="Recorded sessions you can step through." />
+</Cards>

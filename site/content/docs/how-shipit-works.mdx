@@ -1,0 +1,132 @@
+---
+title: How /shipit works
+description: What happens between your prompt and the proof. The router, the trivial lane, playbooks, subagents and the reply.
+---
+
+`/shipit` is a router. It sizes the task, picks a process for it, and holds the agent to that process until there is proof.
+
+## The flow
+
+<Steps>
+<Step>
+
+**Read the setup.** It reads `~/.claude/shipit/models.md` if it exists. A missing file or line means the default model for that role.
+
+</Step>
+<Step>
+
+**Check for berth.** Any `BERTH_*` variable, `berthd` or `berth` on the `PATH`, or the `mcp__berth__*` tools mean berth is there. Every step that uses berth has a plain Claude Code fallback.
+
+</Step>
+<Step>
+
+**Read saved rejections.** The project memories Claude Code loaded are constraints. A "don't X" is never re-pitched or routed around.
+
+</Step>
+<Step>
+
+**Size it.** A trivial task takes the trivial lane and skips the rest. Anything else matches a playbook, and its steps open the todo list.
+
+</Step>
+<Step>
+
+**Run the steps.** Each step calls the skills it needs (`/how` before a nontrivial change, `/architect` for code that crosses a function boundary, `/interrogate` for a contested design) and delegates to subagents.
+
+</Step>
+<Step>
+
+**Prove it.** Before it says done, and before any PR, it builds the [proof pack](/proof).
+
+</Step>
+<Step>
+
+**Reply.** Short, outcome first, with the proof linked and every claim labeled measured, inferred or guess. A run that spawned subagents ends with its cost.
+
+</Step>
+</Steps>
+
+## The trivial lane
+
+A task is trivial when all of these hold:
+
+- The diff is small and local: a typo, a copy or config value, a one-line fix, a rename inside one file, a dependency bump.
+- It adds no behavior, API, data shape or migration.
+- It is reversible, and you didn't ask for rigor.
+
+Words like "quick", "just" or "nit" are a hint, not proof. In the lane, `/shipit` makes the change, runs the one check that covers it, and replies in two or three lines with the command and its result. No todo list, no subagents, no artifact.
+
+It escalates the moment the task grows: it touches more than expected, its check fails twice, or it changes behavior someone depends on. It says so in one line and switches to the matching playbook.
+
+## Playbooks
+
+A playbook is the checklist `/shipit` follows for one kind of task. You never name it. You describe the task, and the router matches it and copies the steps into the todo list verbatim.
+
+| group | playbooks |
+|---|---|
+| Thinking | Ideation, Investigation, Research |
+| Building | Feature, Bug fix, Refactoring, Prototype, Design audit, Visual parity |
+| Measuring | Perf issue, Hillclimb, Runtime forensics, Trace forensics, Eval |
+| Delivering | Opening a PR, Babysit, Shipping |
+| Running long | Autonomous run, Session pickup, Pause safely |
+| Housekeeping | Authoring a skill, Worktree cleanup |
+
+A prompt framed as an idea ("what if we…", "help me plan", "no code") goes to Ideation: real options with a recommendation, then a stop for your pick. A large effort, or work you step away from, goes to the `/figure-it-out` skill, which designs the run first. [Playbooks](/playbooks) has every one in full.
+
+## What a good prompt carries
+
+You don't write a spec. Each of these fits in a sentence:
+
+- **The goal.** What's wrong, or what you want.
+- **The done check.** Something that can pass or fail.
+- **The proof you want to see.** Output, screenshots, a before and after number.
+- **What you already know.** A symptom, a log line, a failing job id.
+- **The real constraints.** "repro first", "don't change any code yet", "zero behavior change".
+
+```text
+/shipit the csv export drops its last row since yesterday's deploy. repro first, then fix. done means the 60k-row fixture exports every row. show me the row counts before and after.
+```
+
+Don't list skills in your prompt. The playbook already sequences them.
+
+## Subagents and model roles
+
+The chat that gets `/shipit` runs the playbook and stays in the lead. It hands bounded work to subagents, each on the model its role names.
+
+| role | model |
+|---|---|
+| code delegates (feature, refactoring, bug fix, perf, hillclimb) | sonnet |
+| hardest tasks, judgment and prose | opus |
+| verification | sonnet |
+| reading roles (how explorers, why investigators, recall and source readers) | haiku |
+| panels (arena, architect, interrogate) | a mix of families, set by the skill |
+
+A few rules hold for every subagent:
+
+- **At most 5 at once**, unless you set another cap. The rest queue.
+- **Saved rejections go into every brief**, quoted, because a subagent may not see your memories.
+- **Every delegate reports back** with what it changed, the branch, the checks it ran and its proof. The lead reviews the diff and writes its own summary.
+- **Fresh by default.** A fix round or a retry goes to a new subagent with the full brief, not a resumed one.
+
+<Berth>
+**Isolation.** Delegates that write code each get a berth task: its own worktree, port and environment. Each one reports back with a `<berth-notification>` when it finishes, so the lead ends its turn instead of polling. Parallel branches come back together as one PR to `main`.
+</Berth>
+
+<NoBerth>
+**Isolation.** Delegates that write code each run as an Agent tool subagent with `isolation: "worktree"`, so each writes to its own checkout. Subagents run in the background and notify the lead when done, so it ends its turn instead of polling. Parallel branches come back together as one PR to `main`.
+</NoBerth>
+
+[Models and cost](/models-and-cost) has every role, the effort rules and the eval behind the Haiku default.
+
+## Proof
+
+"It compiles" and "tests pass" are inputs to proof, not proof. The [proof pack](/proof) holds evidence you can look at, sized to the change. If it can't be produced, the reply says what's missing and why, and doesn't claim done.
+
+## The reply and the cost receipt
+
+The reply leads with the outcome, names each principle that shaped a decision, links the proof, and never fabricates a link or a number. A run that spawned subagents or ran long ends with the total line from:
+
+```sh
+python3 -I ~/.claude/skills/shipit/scripts/cost.py
+```
+
+When more than a handful of agents ran, the full table goes out as an artifact.

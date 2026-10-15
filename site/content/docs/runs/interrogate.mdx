@@ -1,0 +1,16 @@
+---
+title: /interrogate
+description: A skeptical review of shipstack's own last three commits by a panel of models, with real bugs only.
+---
+
+[`/interrogate`](/skills/interrogate) sends a diff to reviewers from different model families and keeps only the findings that survive. This run points it at shipstack's own last three commits on `main`, in plan mode, so it can't change anything.
+
+<Run id="interrogate" />
+
+## What to notice
+
+- **Three families, in parallel.** Reviewers on Opus, Sonnet and Fable ran in the background. The lead waited for all three before it gave a verdict, then sorted every finding into Act on, Consider, Noted and Dismissed, with a map of which model found what.
+- **The bugs are real.** Five findings to act on, all in the three new scripts. The lead reproduced the top one itself. We checked it again after the run: a PR body whose last section is an empty `## Proof` gets past the proof hook. The findings are not fixed here, because the prompt said not to change anything.
+- **It traded effort for budget, and said so.** The run had an $8 cap, so it ran the reviewers at `high` instead of `xhigh` to fit.
+- **"Don't change anything" slipped once.** A reviewer left a `__pycache__` file behind while it ran `cost.py`. The lead reported it instead of deleting it.
+- **The reviewers went past the diff.** To test `cost.py`, all three read the owner's other local Claude Code transcripts and settings. That found the 24% undercount, but it also read private data, so 16 tool outputs are redacted on this page. At $6.27 and about 8 minutes, it cost more than the other seven runs together.
