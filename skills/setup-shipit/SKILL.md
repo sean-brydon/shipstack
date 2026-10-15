@@ -13,18 +13,18 @@ Write `models.md` in the shipit config folder, the file the **shipit** skill and
 
 Work out which agent you are and read its adapter in the shipit skill's folder (`<skills>/shipit/adapters/claude-code.md` for Claude Code, `<skills>/shipit/adapters/codex.md` for Codex). It names:
 
-- the shipit config folder, so where `models.md` goes (`~/.claude/shipit/` for Claude Code, `~/.agents/shipit/` for Codex),
+- the shipit config folder, so where `models.md` goes,
 - the values a role accepts, and the default for every role,
 - how effort is set,
 - how a seat on another vendor runs,
-- any permissions or auto-mode step for your agent.
+- any permissions setup step for your agent.
 
-An agent with no adapter writes `models.md` to `~/.agents/shipit/` with `inherit` for every role, and says so.
+An agent with no adapter writes `models.md` to the config folder the **shipit** skill's first step names for that case, with `inherit` for every role, and says so.
 
 ### 1. Detect what is available
 
 - **Your own models.** The adapter lists the values a role accepts. Where it names fixed families, there is nothing to probe. Where it says the list comes from your agent (a models cache, a help command), read that list now.
-- **A second vendor (opt-in).** The adapter names the other agent's CLI and the value that runs a seat through it (`codex` from Claude Code, `claude` from Codex). Run `command -v <cli>`. When it is on PATH, that value is valid for any role. When it is not, never write it.
+- **A second vendor (opt-in).** The adapter names the other agent's CLI and the value that runs a seat through it. Run `command -v <cli>`. When it is on PATH, that value is valid for any role. When it is not, never write it.
 - **berth.** Check `command -v berth berthd`, `env | grep '^BERTH_'` (names only, never print values), and whether berth's tools are listed in your session. berth needs no line in the file. The skills detect it at run time and use berth tasks, the agent browser and artifacts when it is there (see the berth adapter). Report what you found, because it changes how panels run (a berth task per runner, each in its own worktree) and how proof is captured.
 
 The value `inherit` is always valid. The role then runs on the parent session's model.
@@ -92,7 +92,7 @@ Then mention permissions once. Long runs (autonomous run, a repeating loop) work
 
 ### 7. Your adapter's permissions step
 
-If your adapter has an auto-mode or permissions setup step, run it now, exactly as the adapter says (Claude Code's is **Name your repos for auto mode** in `adapters/claude-code.md`). Never edit your agent's settings without the user's go. Skip this step when the adapter has none, and say so in one line.
+If your adapter has a permissions setup step, run it now, exactly as the adapter says. Never edit your agent's settings without the user's go. Skip this step when the adapter has none, and say so in one line.
 
 ### 8. Offer a verification skill (optional)
 

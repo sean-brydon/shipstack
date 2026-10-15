@@ -11,10 +11,10 @@ description: The skills say what to do; one adapter per agent says how.
 |---|---|---|---|
 | spawn a helper | subagent, own worktree for writing | background `codex exec`, `git worktree add` for writing | a berth task per helper, reports back on its own |
 | ask the user | structured questions when they fit | numbered questions in the reply | same as the agent |
-| model per role | `haiku` / `sonnet` / `opus` / `fable` + effort | `-m` and `model_reasoning_effort` per run | same as the agent |
+| model per role | `haiku` / `sonnet` / `opus` / `fable` + effort | `-m` and `model_reasoning_effort` per run | an agent preset in `.berth/config.json`, else the agent's own helper |
 | an artifact | Artifact page or a table | a table, or an HTML/CSV file | berth-artifacts in Shipyard |
 | screenshots, visual diff | browser tools or Playwright | browser tools or Playwright, paired shots | berth-browser, berth-visual-diff |
-| proof hook | opt-in `PreToolUse` hook | Proof section checked by hand | `before:` hook |
+| proof hook | opt-in `PreToolUse` hook | Proof section checked by hand | use the agent's hook |
 | cost receipt | dollars by agent and model | token totals from the session log | same as the agent |
 
 Install puts the skills in `~/.claude/skills` and `~/.agents/skills` (where Codex reads them) for whichever agents it finds. The adapters live in [`skills/shipit/adapters/`](https://github.com/sean-brydon/shipstack/tree/main/skills/shipit/adapters).

@@ -8,7 +8,7 @@ disable-model-invocation: true
 
 A guided flow for turning the user's working conventions into a skill agents will follow. The output is one `-mode` skill tailored to them (e.g. `jay-mode`, `priya-mode`) in the user's skills folder (your adapter names it) as `<handle>-mode/SKILL.md`. It routes through shipit: the **shipit** skill stays the base (its playbooks, principles and helper rules), and the mode skill holds only where the user differs or adds.
 
-This skill orchestrates three others: an inline mining pass (see step 1), the Authoring a skill playbook (`playbooks/authoring-a-skill.md` in the shipit skill), and the **unslop** skill (prose discipline). It sequences them. It doesn't replace them.
+This skill orchestrates three others: an inline mining pass (see step 1), the Authoring a skill playbook (`<skills>/shipit/playbooks/authoring-a-skill.md`), and the **unslop** skill (prose discipline). It sequences them. It doesn't replace them.
 
 ## Flow
 

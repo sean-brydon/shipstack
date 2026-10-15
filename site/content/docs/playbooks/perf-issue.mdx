@@ -24,10 +24,10 @@ description: "Traces a measured slowness and improves it against a baseline. Eve
    7. Do it cheaper.
 
    When an earlier mantra meets the target, stop.
-3. Plan the fix from the trace. If it crosses a function boundary, run the **architect** skill (`<skills>/architect/SKILL.md`) first. Delegate implementation to a writing helper in its own worktree, on the `code` role's model. Pick each helper's effort for the job, per the router's Subagents section. Review the diff. Capture a post-fix trace with the same command, workload, and N.
+3. Plan the fix from the trace. If it crosses a function boundary, run the **architect** skill (`<skills>/architect/SKILL.md`) first. Delegate implementation to a writing helper in its own worktree, on the `code` role's model. Pick each helper's effort for the job, per the Helpers section of the **shipit** skill. Review the diff. Capture a post-fix trace with the same command, workload, and N.
    Apply the **Sequence Work into Verifiable Units** principle ([`principles/sequence-verifiable-units.md`](/principles/sequence-verifiable-units)), verifying each attempt before trying the next.
 4. Parse and compare the artifacts (JSON to sqlite, diff). "Inconclusive" or wrong-surface is not a pass. Flag it.
-5. Chart the result as an artifact. Make a bar chart with before muted and after in a series colour, the direction of better stated (lower or higher), units set, and the command and N in the subtitle or notes. Add a table of the top frames or phases before and after when the trace shows where the time moved. Load the **dataviz** skill for the chart. If you cannot publish an artifact, put a markdown table of baseline, post-fix, and delta in the reply.
+5. Chart the result as an artifact. Make a bar chart with before muted and after in a series colour, the direction of better stated (lower or higher), units set, and the command and N in the subtitle or notes. Add a table of the top frames or phases before and after when the trace shows where the time moved. Load the **dataviz** skill for the chart if your environment has it. If you cannot publish an artifact, put a markdown table of baseline, post-fix, and delta in the reply.
 6. Cite the measurement in the PR: the numbers, the command, N, and the chart or table.
 7. Run **Opening a PR** ([`playbooks/opening-a-pr.md`](/playbooks/opening-a-pr)).
 

@@ -8,7 +8,7 @@ disable-model-invocation: true
 
 Investigate the motivation and intent behind code. The companion `how` skill answers what the code does and how it works. `why` answers what forces led to its shape.
 
-**Models.** Each spawn below names a role in `models.md`. If a role is missing, use the adapter's default for it. Set each helper's effort from the budget in `models.md`, then adjust it for the job per the Subagents section of the **shipit** skill (`<skills>/shipit/SKILL.md`). If a value can't be used here, use the default and say so. A seat on another vendor's CLI (e.g. a codex seat) may not see this session's connected tools (MCP servers), so for this skill run that seat on the role's default and say so. See your adapter.
+**Models.** Each spawn below names a role in `models.md`. If a role is missing, use the adapter's default for it. Set each helper's effort from the budget in `models.md`, then adjust it for the job per the Helpers section of the **shipit** skill (`<skills>/shipit/SKILL.md`). If a value can't be used here, use the default and say so. A seat on another vendor may not see this session's connected tools (MCP servers), so for this skill run that seat on the role's default and say so. See your adapter.
 
 Every spawn is a helper that can use the session's connected tools. **Do not use a search-only helper that reads excerpts here.** It is built to locate code. Investigators must read whole PRs, tickets, docs, and threads through MCP tools, and the synthesizer spot-checks citations through them. Every prompt says the helper must not write files, commit, or change external state.
 

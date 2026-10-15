@@ -18,7 +18,7 @@ If your agent exposes the current session id, it names this chat's file. Otherwi
 
 ## 2. Spawn three reviewers in parallel
 
-Spawn three read-only helpers in one go. Reviewers need access to the ticket tracker, chat, and observability tools, if you have them, to look up the tickets, chat threads, and traces the transcript references. End your turn after spawning them. The helpers report back when they finish.
+Spawn three read-only helpers in one go. Fill `<ABSOLUTE_PATH>` in each template with the transcript's path, and `<TRANSCRIPT_NOTES_PATH>` with the absolute path of your adapter's transcript notes (`<skills>/shipit/adapters/claude-code/transcripts.md` for Claude Code, the Transcripts section of `<skills>/shipit/adapters/codex.md` for Codex), written out in full. Reviewers need access to the ticket tracker, chat, and observability tools, if you have them, to look up the tickets, chat threads, and traces the transcript references. End your turn after spawning them. The helpers report back when they finish.
 
 Each reviewer and the synthesizer name a role line in the shipit models file and a default role. Use that line's model, or the default role's model if the file or the line is missing. If the value names a different agent family, run the same prompt through that agent (see your adapter) and say which lookups it skipped for lack of tools. Set each helper's effort for the job, per the Helpers section of the **shipit** skill.
 
@@ -36,7 +36,7 @@ Spawn one helper with the `reflect judgment, divergent, synthesizer` model (defa
 
 ## 4. Structural enforcement check
 
-Move any Accepted item that a lint rule, script, metadata flag, hook, or runtime check would enforce more reliably to Backlog. See the **Encode Lessons in Structure** principle (`principles/encode-lessons-in-structure.md` in the shipit skill). The **correct** skill builds that kind of enforcement when the user wants it now.
+Move any Accepted item that a lint rule, script, metadata flag, hook, or runtime check would enforce more reliably to Backlog. See the **Encode Lessons in Structure** principle (`<skills>/shipit/principles/encode-lessons-in-structure.md`). The **correct** skill builds that kind of enforcement when the user wants it now.
 
 ## 5. Apply
 
@@ -47,7 +47,7 @@ Present the Backlog items with the Accepted list and file them only on the user'
 Follow each approved row's Routing exactly:
 
 - Trivial existing-skill edit (a one-line bullet, a tightened sentence, a stale fact corrected): the parent does it directly.
-- Substantive existing-skill edit (a new section, a new pattern table, more than ~10 lines): run the Authoring a skill playbook (`playbooks/authoring-a-skill.md` in the shipit skill) and its draft / test / iterate loop. A skill-creator skill, if you have one, helps with the loop.
+- Substantive existing-skill edit (a new section, a new pattern table, more than ~10 lines): run the Authoring a skill playbook (`<skills>/shipit/playbooks/authoring-a-skill.md`) and its draft / test / iterate loop. A skill-creator skill, if you have one, helps with the loop.
 - `tune description: <skill path>` (the skill exists but didn't trigger when it should have): run the same playbook's description work. Agents show every skill description in every session, so the edit makes the trigger sharper, not the description longer.
 - `new skill via authoring playbook: <kebab-name>`: hand creation to the Authoring a skill playbook. Do not invent the shape ad hoc.
 

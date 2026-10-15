@@ -43,7 +43,7 @@ Group the mistakes into classes. A class counts once it has happened twice.
    - A hook in your agent, committed with the repo. A before-tool hook on a command or file edit can refuse the call, and what it prints reaches the agent. An end-of-turn hook can refuse to end the turn until a check passes. See your adapter for how to write and debug them.
    - A hook in your orchestration tool, when the repo runs under one that has them. It can refuse an action (running a command, sending a prompt, creating a worktree) for every agent on the machine, whatever its harness. See your adapter.
    A hook only catches agents whose session loads it. A lint or CI check catches everyone, so prefer level 2 when the mistake shows in the diff.
-4. **Test the behavior.** Fix or delete any test that would still pass if every function it calls returned nothing (the **Test Behavior, Not Implementation** principle, [`principles/test-behavior-not-implementation.md`](/principles/test-behavior-not-implementation) in the shipit skill).
+4. **Test the behavior.** Fix or delete any test that would still pass if every function it calls returned nothing (the **Test Behavior, Not Implementation** principle, `<skills>/shipit/principles/test-behavior-not-implementation.md`).
 5. **Write memory, docs, or agent rules last, only for judgment calls.** Nothing fails when an agent skips them. A saved memory (if your agent has them and loads them into every session in the project) reaches the next agent here without being opened, so it beats a doc for a local preference. It lives on this machine only. A rule every contributor needs goes in `AGENTS.md` (or your agent's instruction file), which ships with the repo.
 
 ## Fix and prove

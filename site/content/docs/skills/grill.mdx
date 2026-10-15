@@ -31,7 +31,7 @@ Adapted from Matt Pocock's `grilling` and `domain-modeling` skills (MIT, github.
 
 Treat the plan as a tree: every decision branches into the decisions that depend on it. The **frontier** is every decision whose prerequisites are already settled, the questions you can ask now without guessing at answers you haven't heard.
 
-Work in **rounds**. Each round asks the whole frontier, numbered, with your recommended answer under each, then waits. Word each question so "yes" accepts your recommendation.
+Work in **rounds**. Each round asks up to six frontier questions, numbered, with your recommended answer under each, then waits. Word each question so "yes" accepts your recommendation.
 
 ```
 **Q1. <title>.** <the question, with the options if there are any>
@@ -45,7 +45,7 @@ The answers reshape the tree: settled decisions push the frontier outward. Recom
 
 - **Facts are yours, decisions are theirs.** Never ask the user something you could look up. When a frontier question needs a fact from the code, the history or a running system, send a read-only helper to find it (see your agent's adapter) and ask the rest of the frontier meanwhile. Only the questions downstream of that fact wait.
 - **Recommend every time.** A question without a recommendation hands the user your work.
-- **Keep rounds small.** Three to six questions. If the frontier is bigger, ask the ones that unblock the most first.
+- **Keep rounds small.** Three to six questions, never more than six in a round. If the frontier is bigger, ask the ones that unblock the most first and hold the rest for the next round.
 - **Use the project's words.** Read `GLOSSARY.md` first if it exists (or the context `GLOSSARY.md` that `GLOSSARY-MAP.md` points to). Call out a term the user uses differently from the glossary: "The glossary says a cancellation is X; you seem to mean Y. Which?"
 - **Sharpen fuzzy language.** When a term is vague or overloaded, propose one precise word.
 - **Test with scenarios.** Invent concrete edge cases that force the boundaries ("an order is half shipped and the customer cancels: what happens?").

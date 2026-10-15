@@ -59,7 +59,7 @@ Evidence cells stay pointers in the artifact too. Never paste secrets or private
 ## Rules
 
 - Append-only. A wrong call gets a new row that supersedes it. Never edit or delete history.
-- Prefer evidence produced by committed scripts over hand-made one-offs (the **Encode Lessons in Structure** principle, `principles/encode-lessons-in-structure.md` in the shipit skill).
+- Prefer evidence produced by committed scripts over hand-made one-offs (the **Encode Lessons in Structure** principle, `<skills>/shipit/principles/encode-lessons-in-structure.md`).
 
 ## Audit the log against the transcript
 

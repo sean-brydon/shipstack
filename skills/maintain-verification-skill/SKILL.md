@@ -39,7 +39,7 @@ Only edit the verification skill's own directory (its SKILL.md, features/, and a
 
 5. **Triage.** Wrong or missing user-POV description → doc drift, fix it. Working behavior the harness can't drive → harness gap, fix it. A harness fix follows the same helpers rule as generation (scripts executable, invocation documented in the skill body). App behavior that's actually broken → product gap. Record it for the user and keep it out of this PR.
 
-6. **Ship or stop.** For changed: one PR of proven corrections, through the Opening a PR playbook (`playbooks/opening-a-pr.md` in the shipit skill), with the live proof embedded. Re-read every changed file first. For clean or blocked: no PR, report the outcome and the coverage honestly.
+6. **Ship or stop.** For changed: one PR of proven corrections, through the Opening a PR playbook (`<skills>/shipit/playbooks/opening-a-pr.md`), with the live proof embedded. Re-read every changed file first. For clean or blocked: no PR, report the outcome and the coverage honestly.
 
 Keep concise run notes (features covered, unreachable prerequisites, confirmed drift, outcome) in a scratch location. Don't commit them.
 

@@ -8,7 +8,7 @@ How each neutral term in shipstack maps to Claude Code. Read this after the rout
 |---|---|
 | `<skills>`, the folder that holds every shipstack skill | `~/.claude/skills/` (or `$CLAUDE_CONFIG_DIR/skills/`) |
 | the project's skills folder | `.claude/skills/` in the repo |
-| the shipit config folder (`models.md`, resume notes from the Pause safely playbook) | `~/.claude/shipit/` |
+| the shipit config folder (`models.md`, and resume notes at `resume/<slug>.md` from the Pause safely playbook) | `~/.claude/shipit/` |
 | subagent files (`shipit-agent`, `comment-sicko`) | `~/.claude/agents/`, linked from the repo's `agents/` by `install.sh` |
 | saved memories | `~/.claude/projects/<slug>/memory/` (`MEMORY.md` is the index) |
 | session transcripts | `~/.claude/projects/<slug>/*.jsonl` |
@@ -21,13 +21,16 @@ How each neutral term in shipstack maps to Claude Code. Read this after the rout
 
 | neutral term | in Claude Code |
 |---|---|
-| spawn a read-only helper | the `Agent` tool with `subagent_type: "Explore"`. Explore reads excerpts, not whole files. A reader that must read whole files (an explainer, a judge) uses `subagent_type: "general-purpose"` with "do not edit files" in its prompt |
+| spawn a read-only helper | the `Agent` tool. `subagent_type: "Explore"` reads excerpts, not whole files, so it is only for search-shaped roles: how explorers, recall readers, source readers, automate-me miners and swarm search slices. Every role that must read whole files or use MCP tools uses `subagent_type: "general-purpose"` with "you must not edit files" in its brief: interrogate reviewers, reflect reviewers, the show-me-your-work reviewer, swarm verification workers, why investigators and the why synthesizer, the arena cross-judge and the how explainer |
 | spawn a writing helper in its own worktree | the `Agent` tool with `subagent_type: "shipit-agent"` and `isolation: "worktree"` |
+| make a worktree yourself (your own, or a checkout for a helper or a candidate) | `git worktree add -b <branch> <path> <base>`. A verifier's read-only checkout of someone else's branch is `git worktree add --detach <path> origin/<head-branch>` |
 | the Comment Sicko helper (no-comments) | the `Agent` tool with `subagent_type: "comment-sicko"`. It is read-only by its own `tools` list |
 | the delegate brief | the Agent tool's `prompt`. Point at files rather than inlining them. Put the router's absolute path (`~/.claude/skills/shipit/SKILL.md`) in every `shipit-agent` brief |
 | end your turn; the helper reports back | Agent tool helpers run in the background and notify you when done. End your turn rather than polling |
 | message a running helper | `SendMessage` with the helper's id or name. A new `Agent` call starts fresh |
-| ask the user | `AskUserQuestion`: 1 to 4 questions per call, 2 to 4 options each, a recommended option first, `multiSelect: true` when several apply. More than 4 questions, or answers that don't fit options, go as plain numbered text in the reply with a recommended answer for each |
+| message a running agent you didn't start | no channel. Report what you would tell it to the user. With berth, `berthd session send` (see `berth.md`) |
+| cancel a helper you started | the `TaskStop` tool with its task id (or a named helper's name). It stops a background helper or a background shell. With berth, `berthd session kill` for a berth task |
+| ask the user | `AskUserQuestion`, only when the round has at most 4 questions with at most 4 options each. Put a recommended option first, and set `multiSelect: true` when several apply. Any other round (more than 4 questions, more than 4 options, or answers that don't fit options) goes as plain numbered text in the reply with a recommended answer for each |
 | the todo list | `TodoWrite`, or `TaskCreate` and `TaskUpdate` where that is what the session has |
 | the role's model and effort | the Agent tool's `model` and `effort` params (see **Models and effort**) |
 | an artifact | the `Artifact` tool (see **Artifacts**) |
@@ -41,7 +44,8 @@ How each neutral term in shipstack maps to Claude Code. Read this after the rout
 | a stream watcher | the `Monitor` tool (see **Waiting and watching**) |
 | a hook in your agent | a `hooks` entry in `settings.json` (see **Hooks**) |
 | the cost receipt | `cost.py` (see **Cost receipt**) |
-| tools that aren't loaded yet | deferred tools show by name only. Load them with `ToolSearch` (`select:<name>,<name>`, all you need in one call) before calling them |
+| a connected tool (MCP) | named `mcp__<server>__<tool>` |
+| tools that aren't loaded yet | deferred tools show by name only. Load them with `ToolSearch` before calling them, all you need in one call. `select:<name>,<name>` loads exact names, and `+<server>` searches one MCP server's tools |
 
 ## Helpers
 
@@ -49,9 +53,9 @@ How each neutral term in shipstack maps to Claude Code. Read this after the rout
 - `shipit-agent` reads the router and this adapter before any work. Never spawn it to run a playbook. The chat that received `/shipit` runs the playbook.
 - `isolation: "worktree"` gives the helper its own git worktree, cleaned up automatically if it made no changes. Its report names the branch. A worktree session can't write the main checkout. Bring the branch back instead.
 - Routed skills (`how`, `why`, `interrogate`, `reflect`, `swarm`, `arena`, `architect`) name their helper kinds and roles. Map them with the table above.
-- **A seat on another vendor.** A `codex` value runs that seat through Codex. Write the filled brief to a file, then run `codex exec -s read-only -C <repo root> -o <answer file> - < <brief file>` in Bash with `run_in_background: true`. A writing seat runs `-s workspace-write` in its own `git worktree add` checkout instead. The answer is in the answer file when the background task notifies you. With berth, a berth task with `--agent codex` also works (see `berth.md`). If `codex` is not on PATH, run the seat on the role's default and say so.
-- **Listing running helpers.** The helpers and background shells you started this session report back through their notifications. Claude Code has no command that lists other sessions' agents. With berth, `berthd sessions --json` does. Without it, check processes (`ps`, `lsof -d cwd -Fn`) and the transcripts' modification times.
-- **A candidate in its own directory** (the Eval playbook). Run `claude -p` from that directory so its transcript lands under that directory's own slug. `claude -p --model <family> --effort <level> --permission-mode plan "<brief>"` is a read-only run. `--permission-mode` also takes `acceptEdits`, `auto`, `dontAsk`, `manual` and `bypassPermissions`.
+- **A seat on another vendor.** A `codex` value runs that seat through Codex on its configured model. Write the filled brief to a file, then run `codex exec -s read-only -C <repo root> -c model_reasoning_effort=<level> -o <answer file> - < <brief file>` in Bash with `run_in_background: true`. Pass the role's effort, or Codex uses its own config's. A writing seat runs `-s workspace-write` in its own worktree (`git worktree add -b <branch> <path> <base>`, then `-C <path>`) instead. The answer is in the answer file when the background task notifies you. With berth, a berth task with `--agent codex` also works (see `berth.md`). If `codex` is not on PATH, run the seat on the role's default and say so.
+- **Listing running helpers.** The helpers and background shells you started this session report back through their notifications. `claude agents --json` prints the active Claude Code sessions, interactive and background, as a JSON array (`id`, `name`, `kind`, `state`, `cwd`, `sessionId`, `startedAt`). `--cwd <path>` keeps only the sessions started under that path, and `--all` adds finished background sessions. With berth, `berthd sessions --json` lists berth's sessions. Otherwise check processes (`ps`, `lsof -d cwd -Fn`) and the transcripts' modification times.
+- **A candidate in its own directory** (the Eval playbook). Run `claude -p --model <family> --effort <level> --permission-mode auto "<brief>"` from that directory, in Bash with `run_in_background: true`, so its transcript lands under that directory's own slug. It is a fresh session that reads no shipit brief. Use `--permission-mode auto` for a candidate that writes code. Under `claude -p`, `acceptEdits` accepts file edits but refuses shell commands that change anything (a test run of `python3 -c` and `git commit` was refused, 2026-10-15, Claude Code 2.1.300), so the candidate could not run its checks. `--permission-mode plan` is a read-only run. The mode also takes `dontAsk`, `manual` and `bypassPermissions`.
 
 ## Models and effort
 
@@ -151,11 +155,11 @@ Skip this step when the user declines, or when `settings.json` has no `autoMode`
 - The current chat is `$CLAUDE_CODE_SESSION_ID.jsonl` when that variable is set.
 - Order candidates by real modification time (`ls -t`), never by file name.
 - Never read another project's directory unless the user asks. Don't glob across `~/.claude/projects/*/`.
-- The resume note from the Pause safely playbook goes in `~/.claude/shipit/`.
+- The resume note from the Pause safely playbook goes in `~/.claude/shipit/resume/<slug>.md`.
 
 ## Hooks
 
-Hooks live under `hooks` in `~/.claude/settings.json` (every project) or the repo's `.claude/settings.json` (committed with the repo). A `PreToolUse` hook on a tool (matcher `Bash`, `Edit`, …) gets the call as JSON on stdin (`tool_name`, `tool_input`). Exit 2 refuses the call, and what it prints on stderr reaches the agent. A `Stop` hook can refuse to end the turn until a check passes. The **update-config** skill writes them.
+Hooks live under `hooks` in `~/.claude/settings.json` (every project) or the repo's `.claude/settings.json` (committed with the repo). A `PreToolUse` hook on a tool (matcher `Bash`, `Edit`, …) gets the call as JSON on stdin (`tool_name`, `tool_input`). Exit 2 refuses the call, and what it prints on stderr reaches the agent. A `PostToolUse` hook runs after a call succeeds, with its result (`tool_response`), so it can check what an action did and report back. A `Stop` hook can refuse to end the turn until a check passes. The **update-config** skill writes them.
 
 **The proof hook.** `adapters/claude-code/hooks/require-proof.py` refuses `gh pr create` when the PR body has no `## Proof` section with something under it. One line is enough for a nit. Turn it on with this under `hooks` in `~/.claude/settings.json`:
 

@@ -42,9 +42,9 @@ Before spawning reviewers, state the intent in one clear paragraph from the user
 
 Launch all reviewers at once, one per entry on the `interrogate reviewers` role in `models.md`, labeled Reviewer A, B, and so on to match the entry count. If the role is missing, use the adapter's default panel, which is three reviewers from different model families.
 
-Each reviewer is a read-only helper whose prompt says it must not edit files, running on its configured model. An entry that means "the session's own model" runs on it. An entry that names another vendor runs through that vendor's CLI (e.g. a codex seat), and the adapter says how. If an entry can't run here, run that reviewer on Reviewer A's model and say so. Do not block the review on it.
+Each reviewer is a read-only helper whose prompt says it must not edit files, running on its configured model. An entry that means "the session's own model" runs on it. An entry that names another vendor runs as a seat on another vendor, and the adapter says how. If an entry can't run here, run that reviewer on Reviewer A's model and say so. Do not block the review on it.
 
-Read `references/reviewer-prompt.md` and fill in the same template for every reviewer with the stated intent, the diff or file contents, the rubric from `references/rubric.md`, and the code-quality lens from `references/code-quality-review.md`. Set each reviewer's effort from the budget in `models.md`, then adjust it for the job per the Subagents section of the **shipit** skill (`<skills>/shipit/SKILL.md`). Keep each entry's model family, so the panel stays diverse.
+Read `references/reviewer-prompt.md` and fill in the same template for every reviewer with the stated intent, the diff or file contents, the rubric from `references/rubric.md`, and the code-quality lens from `references/code-quality-review.md`. Set each reviewer's effort from the budget in `models.md`, then adjust it for the job per the Helpers section of the **shipit** skill (`<skills>/shipit/SKILL.md`). Keep each entry's model family, so the panel stays diverse.
 
 The reviewers run in the background. End your turn; each reviewer reports back when it ends. Don't poll.
 

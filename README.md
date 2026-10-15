@@ -50,11 +50,11 @@ Its cases run with `python3 -I skills/shipit/adapters/claude-code/hooks/require-
 ## What's in it
 
 - **`/shipit`**, the router. 22 playbooks, grouped as thinking (ideation, investigation, research), building (feature, bug fix, refactoring, prototype, design audit, visual parity), measuring (perf, hillclimb, runtime and trace forensics, eval), delivering (opening a PR, babysit, shipping), running long (autonomous run, session pickup, pause safely), and housekeeping (authoring a skill, worktree cleanup).
-- **28 skills you can type directly.** `/how`, `/why`, `/teach`, `/recall`, `/ketchup` to understand. `/architect`, `/arena`, `/swarm`, `/interrogate`, `/blast-radius` to design and review. `/tdd`, `/benchmark-checklist`, `/no-comments`, `/unslop`, `/technical-writing` to build and clean. `/reflect`, `/correct`, `/automate-me`, `/show-me-your-work`, `/figure-it-out`, `/create-verification-skill` to improve the stack itself. `/shipit-help` lists them all.
+- **29 skills you can type directly.** `/how`, `/why`, `/teach`, `/recall`, `/ketchup` to understand. `/grill` to pin down what to build. `/architect`, `/arena`, `/swarm`, `/interrogate`, `/blast-radius` to design and review. `/tdd`, `/benchmark-checklist`, `/no-comments`, `/unslop`, `/technical-writing` to build and clean. `/reflect`, `/correct`, `/automate-me`, `/show-me-your-work`, `/figure-it-out`, `/create-verification-skill` to improve the stack itself. `/shipit-help` lists them all.
 - **24 principles** in `skills/shipit/principles/`. They are files the router indexes, not skills, so they cost no context until one applies.
 - **2 agents.** `shipit-agent`, the delegate every playbook spawns, and `comment-sicko`, the read-only comment reviewer.
 
-Almost every skill sets `disable-model-invocation`, so its description stays out of your sessions' context. The router reaches them by reading their files. Only `setup-shipit` is listed in every session.
+Almost every skill sets `disable-model-invocation`, so its description stays out of your sessions' context. The router reaches them by reading their files. Only `setup-shipit`, `grill` and `typescript-best-practices` are listed in every session, so the agent can reach for them without being told.
 
 ## What's different from pstack
 

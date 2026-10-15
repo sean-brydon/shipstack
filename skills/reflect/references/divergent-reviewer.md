@@ -18,7 +18,7 @@ Scan for:
 
 ## Scope to skills and tools the session actually used
 
-Route findings only to skills, tools, or lookup tools this transcript used. A skill counts as used when the transcript shows the skill being loaded by name, its `SKILL.md` being read, a helper brief naming its path, or a tool call (shell, search, lookup tool, etc.) matching its documented commands. The transcript's record shapes, and how to pull out the human's turns and the agent's tool calls, are in your adapter. Speculative routings to skills the parent never opened do not count.
+Route findings only to skills, tools, or lookup tools this transcript used. A skill counts as used when the transcript shows the skill being loaded by name, its `SKILL.md` being read, a helper brief naming its path, or a tool call (shell, search, lookup tool, etc.) matching its documented commands. The transcript's record shapes, and how to pull out the human's turns and the agent's tool calls, are in <TRANSCRIPT_NOTES_PATH>. Speculative routings to skills the parent never opened do not count.
 
 Two finding shapes are valid:
 - The parent invoked the skill and you found a real gap in its body. Route to the skill's relevant section.

@@ -10,7 +10,7 @@ Read the codebase to answer "how does X work?" questions. Produce architectural 
 
 Every spawn is a helper. Explorers are read-only helpers. The explainer is also a helper, and its prompt says it must not edit files, because it has to read whole files to reconcile the explorers, not excerpts.
 
-**Models.** Explorers use the `how explorer` role in `models.md`, and every explainer uses the `how explainer` role. If a role is missing, use the adapter's default for it. Set each helper's effort from the budget in `models.md`, then adjust it for the job per the Subagents section of the **shipit** skill (`<skills>/shipit/SKILL.md`). Explorers keep the starting effort, never lowered. If a value can't be used here, use the default and say so. The adapter says which concrete models fill the roles and how to run a seat on another vendor (e.g. a codex seat); if that isn't possible, run the seat on the role's default and say so.
+**Models.** Explorers use the `how explorer` role in `models.md`, and every explainer uses the `how explainer` role. If a role is missing, use the adapter's default for it. Set each helper's effort from the budget in `models.md`, then adjust it for the job per the Helpers section of the **shipit** skill (`<skills>/shipit/SKILL.md`). Explorers keep the starting effort, never lowered. If a value can't be used here, use the default and say so. The adapter says which concrete models fill the roles and how to run a seat on another vendor. If that isn't possible, run the seat on the role's default and say so.
 
 ## 1. Assess complexity
 

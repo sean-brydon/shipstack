@@ -10,7 +10,7 @@ Clone the shipit repository, then run its install script from the repo root:
 ./install.sh
 ```
 
-It symlinks every skill into `~/.claude/skills/` and every agent (`shipit-agent`, `comment-sicko`) into `~/.claude/agents/`. Because they're symlinks, a `git pull` in the repo updates the next session. The script is safe to rerun. `./install.sh --dry-run` shows what it would do, and `./install.sh --uninstall` removes only the links that point into the repo. It never overwrites a real file or a link that points somewhere else, and it says which ones it skipped.
+It symlinks every skill into `~/.claude/skills/` and every agent (`shipit-agent`, `comment-sicko`) into `~/.claude/agents/` when it finds Claude Code, and every skill into `~/.agents/skills/` when it finds Codex. `--agent claude|codex|all` picks the agents instead. Because they're symlinks, a `git pull` in the repo updates the next session. The script is safe to rerun. `./install.sh --dry-run` shows what it would do, and `./install.sh --uninstall` removes only the links that point into the repo. It never overwrites a real file or a link that points somewhere else, and it says which ones it skipped.
 
 Start a new Claude Code session after installing, so the new skills are listed.
 
