@@ -1,0 +1,13 @@
+---
+title: "Guard the Context Window"
+description: "Large outputs, long files, repeated reads, fan-out planning. Route bulk to subagents, keep summaries in the main thread."
+---
+
+**Applies when:** context is filling up: large outputs, long files, repeated reads, fan-out planning.
+
+Route bulk work to subagents (the Agent tool, with `subagent_type: "Explore"` for read-only searches). Keep summaries in the main thread, not raw payloads.
+
+**Why:** Context overflow degrades reasoning quality, creates compression artifacts, and halts progress.
+
+**Pattern:**
+- **Size phases and cap scope.** Limit files per phase, set turn budgets, account for mechanism costs.

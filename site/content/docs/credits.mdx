@@ -1,0 +1,22 @@
+---
+title: Credits
+description: shipstack is an adaptation of pstack by Lauren Tan.
+---
+
+shipstack is an adaptation of [pstack](https://github.com/cursor/plugins/tree/main/pstack) by Lauren Tan, released under the MIT license, ported from Cursor to Claude Code.
+
+The substance is pstack's: the playbooks, the 24 principles, the multi-model review panels and the writing rules. The port keeps playbook steps word for word where they still make sense, and changes only what is Cursor-specific. It was ported from upstream at `cursor/plugins@1e5c90a4`.
+
+## What's different from pstack
+
+- **Claude models.** Roles map to `opus`, `sonnet`, `fable` or `haiku` plus an `effort` level, instead of model slugs with effort baked in. Review panels mix families, and `codex` is an opt-in second vendor.
+- **berth where it's better.** Parallel attempts get a berth task each. Proof uses berth-browser, berth-visual-diff and berth-preview. Results go to berth-artifacts. Every berth step has a plain Claude Code fallback.
+- **Proof and artifacts are non-negotiable.** No PR without a proof pack. Numbers, comparisons and plans go out as artifacts, not prose.
+- **New playbooks.** Ideation, Research and Design audit, plus the 8 out of 10 design bar, the fan-out cap of five, and the default that every PR targets main.
+- **Auto mode aware.** A denied call is logged and reported, never retried or routed around.
+- **Principles are files, not skills,** so they cost no context until one applies.
+- **Dropped.** Cursor-only pieces: custom modes, Grok Bot UI, the benny automation pack, Origin, Cursor cloud agents.
+
+## License
+
+shipstack is MIT licensed. pstack is copyright Lauren Tan. See [`LICENSE`](https://github.com/sean-brydon/shipstack/blob/main/LICENSE).
