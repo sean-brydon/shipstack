@@ -62,7 +62,7 @@ export function ModeSwitch() {
         ))}
       </div>
       <p className="ss-switch-hint">
-        berth is <a href="/berth">Shipyard</a>. Pick how you run Claude Code.
+        berth is <a href="/berth">Shipyard</a>. Pick how you run your agent.
       </p>
     </div>
   );
