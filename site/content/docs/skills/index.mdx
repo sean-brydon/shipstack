@@ -1,0 +1,67 @@
+---
+title: "Skills"
+description: "The 29 skills in the stack."
+---
+
+**What it is.** Every skill in the stack. You can type any of them; `/shipit` calls most of them for you.
+
+**Why.** Each one does one job well, so a playbook can sequence them and you can reach for one directly.
+
+## Setup and help
+
+| skill | what it does | cost |
+|---|---|---|
+| [/shipit](/skills/shipit) | Routes a task to the playbook for its kind, runs it with subagents and the other skills, and stops only when there is proof. | varies |
+| [/setup-shipit](/skills/setup-shipit) | Picks the model per role and the effort budget, and detects codex and berth. | light |
+| [/shipit-help](/skills/shipit-help) | Tells you which skill or playbook fits, and hands you a prompt to send. | light |
+
+## Understand
+
+| skill | what it does | cost |
+|---|---|---|
+| [/how](/skills/how) | Explains how a subsystem works at runtime: the pieces, the flow, where things live, the gotchas. | medium |
+| [/why](/skills/why) | Finds why something is the way it is, from every source it can reach: git history, tickets, docs, chat, logs, error tracking, analytics. | medium |
+| [/teach](/skills/teach) | Runs how and why together and weaves them into one plain explanation, built up diagram by diagram. | heavy |
+| [/recall](/skills/recall) | Rebuilds your recent context on a topic from your own transcripts, project memory, live state and past fixes. | light |
+| [/ketchup](/skills/ketchup) | Catches you up on what changed in this chat since your last message. | light |
+| [/in-your-own-words](/skills/in-your-own-words) | Plays back your goal and the real problem before any work starts. | light |
+| [/sharpen](/skills/sharpen) | Reframes a task the way a top expert would approach it, aimed at what you're after, without over-specifying. | light |
+| [/bro](/skills/bro) | Restates the last reply in plain words, no jargon. | light |
+
+## Design and review
+
+| skill | what it does | cost |
+|---|---|---|
+| [/architect](/skills/architect) | Settles types, signatures and module shape before code, with parallel designs, then stays in the loop while code fills in. | medium |
+| [/arena](/skills/arena) | Runs several attempts at the same thing in separate worktrees, picks the best as a base, and grafts in the best parts of the others. | heavy |
+| [/swarm](/skills/swarm) | Fans out workers across slices or races, five at a time, and returns one report with a coverage table. | heavy |
+| [/interrogate](/skills/interrogate) | Reviewers on different model families attack a diff from separate angles, then a lead sorts real findings from noise. | heavy |
+| [/blast-radius](/skills/blast-radius) | Finds what a small-looking change could break elsewhere, and proves the one fact it's safe because of by running code. | medium |
+
+## Build and clean
+
+| skill | what it does | cost |
+|---|---|---|
+| [/tdd](/skills/tdd) | Writes the failing test first, then the fix. | light |
+| [/benchmark-checklist](/skills/benchmark-checklist) | Vets a number you measured (what limits it, errors, repeat runs, relevance) before you trust or report it. | light |
+| [/no-comments](/skills/no-comments) | Strips comments before review. A read-only reviewer flags them, the accepted ones go, and claimed constraints get turned into checks instead. | light |
+| [/unslop](/skills/unslop) | Removes AI tells from writing. | light |
+| [/technical-writing](/skills/technical-writing) | A layered standard for docs, RFCs, READMEs, PR descriptions and commits. | light |
+| [/typescript-best-practices](/skills/typescript-best-practices) | Type-system discipline in TypeScript syntax: illegal states unrepresentable, parse at the edges. | light |
+
+## Long runs
+
+| skill | what it does | cost |
+|---|---|---|
+| [/show-me-your-work](/skills/show-me-your-work) | Keeps a decision log for long or unattended work: one row per decision with what, why, evidence and result. | light |
+| [/figure-it-out](/skills/figure-it-out) | Designs a custom, auditable playbook when none of the bundled ones fit. | heavy |
+
+## Improve the stack
+
+| skill | what it does | cost |
+|---|---|---|
+| [/reflect](/skills/reflect) | Three reviewers read this chat and turn what was learned into concrete edits to existing skills. | medium |
+| [/correct](/skills/correct) | Finds mistakes agents keep repeating and makes each impossible: architecture, then types, then a lint or hook, then a test, docs last. | medium |
+| [/automate-me](/skills/automate-me) | Drafts your own -mode skill from your transcripts and memory, routing through shipit. | medium |
+| [/create-verification-skill](/skills/create-verification-skill) | Generates a project-local verify skill that drives your app like a user and saves proof a PR can embed. | medium |
+| [/maintain-verification-skill](/skills/maintain-verification-skill) | Keeps the verify skill honest: parallel source readers, one live pass over every feature, at most one PR of proven fixes. | heavy |

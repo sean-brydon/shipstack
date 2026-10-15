@@ -1,59 +1,21 @@
 ---
 title: Auto mode
-description: How /shipit behaves under Claude Code's auto permission mode, what auto mode blocks, and the one setting worth adding.
+description: What auto mode blocks, how /shipit behaves when a call is denied, and the one setting worth adding.
 ---
 
-`/shipit` expects Claude Code's auto permission mode for long runs. In auto mode a classifier approves routine actions, so the agent rarely stops to ask. Without it, every check, commit and subagent can stop at a prompt, and an overnight run sits there until you wake up.
+**What it does.** Lets `/shipit` run long without stopping at permission prompts, and treats a denied call as an answer.
 
-## How auto mode decides
+**Why.** Without auto mode every check, commit and subagent can wait on a prompt, and an overnight run sits until you wake up.
 
-First match wins:
+**What auto mode blocks:** force push, `git reset --hard`, `git checkout -- .`, `git clean -fd`, `git stash drop`, production deploys and migrations, mass cloud deletion, IAM and secret writes, merging unapproved PRs, piping curl to a shell, sending sensitive data out, and adding a git remote you didn't name. Pushes and PRs to the working repo are allowed.
 
-1. Your allow, ask and deny rules.
-2. Read-only actions and edits inside the working directory are approved.
-3. Everything else goes to a classifier model. A block returns the reason to the agent.
+When a call is denied, `/shipit`:
 
-The classifier sees your messages, tool calls that aren't read-only, `CLAUDE.md`, and your `autoMode` rules. It does not see tool results. So the reason for an action has to be in the conversation, not buried in a tool's output. Subagents are checked when they start, on each action, and on their final report.
+1. **Takes it as an answer.** It logs the block, skips or stops the step, and reports the reason. It never retries or routes around it. Three denials in a row pause the run.
+2. **Prefers reversible forms:** `git stash` over `git checkout -- .`, a new commit over a reset, `--force-with-lease` only on its own branch.
+3. **States intent first.** The classifier reads messages, not tool output, so "pushing fix/scroll-drift to open the PR" goes before the push.
+4. **Merges only what you approved** in a message.
 
-## What it blocks by default
+Force-pushing a shared branch, deploys, deleting data, publishing and messaging people always pause, in any mode.
 
-Force push, `git reset --hard`, `git checkout -- .`, `git clean -fd`, `git stash drop`, production deploys and migrations, mass cloud deletion, IAM grants, secret-manager writes, merging unapproved PRs, piping curl to a shell, sending sensitive data out, adding or changing a git remote unless named, and writes to transcript `.jsonl` files. Pushes and PRs to the working repo are allowed.
-
-## How /shipit behaves
-
-- **A denied call is an answer.** It doesn't retry it and doesn't route around it with an equivalent command. It logs the block, skips or stops that step, and reports it with the reason. Three denials in a row pause the whole run.
-- **It prefers reversible forms** the classifier never has to refuse: `git stash` over `git checkout -- .`, a new commit over a reset, `--force-with-lease` only on its own branch, `git worktree remove` on a clean worktree over `rm -rf`.
-- **It states intent before acting.** Because the classifier reads messages, a one-line "pushing fix/scroll-drift to open the PR" goes before the push.
-- **It merges only what you approved.** The Shipping playbook lands only PRs you approved or told it to merge, in a message.
-- **Long runs close their own loop.** Every autonomous run names a check that returns pass or fail, and a fresh verification subagent reports gaps.
-
-## What still pauses for you
-
-Reversible work goes ahead without asking: edits, branches, commits, pushes to its own branch, opening PRs once the proof exists, running checks, starting agents. Irreversible or outward-facing actions always pause, whatever the mode:
-
-- force-pushing a shared branch
-- deploys
-- deleting data
-- publishing a release you didn't ask for
-- messages to customers or other people
-- merging a PR you didn't approve
-
-"Don't stop", "while I'm gone" and `/goal` mean keep going on everything else. Each call made under that grant is reported with its reason.
-
-## Recommended setup
-
-- **Name your repos.** Set `autoMode.environment` in `~/.claude/settings.json` (keep the literal `"$defaults"`) to name the GitHub org and repos you push to, so pushes and PRs there read as trusted. `/setup-shipit` does this for you, with a dry run first. Check it with `claude auto-mode config`.
-- **Rebase flows, if you want them.** Allow force pushes to your own feature branches, for example in prose: "`git push --force-with-lease` to my own feature branches in acme/web is routine". Without that, auto mode blocks every force push, and `/shipit` updates PR branches with `git merge origin/<trunk>` instead.
-- **Narrow allow rules survive.** Rules like `Bash(go test *)` or `Bash(pnpm test)` stay in force in auto mode. Broad ones like `Bash(*)` are dropped on entering it. The `fewer-permission-prompts` skill builds the narrow list from your own transcripts.
-
-## Long runs
-
-`/loop` and scheduled tasks inherit the session's mode. They fire only while Claude Code is running and idle, and recurring ones expire after 7 days. A background session waiting on a permission prompt sits in "Needs input" with nothing to deny it, so start a fleet in auto mode.
-
-<Berth>
-Overnight work can live in a berth task on a box. It keeps running after your laptop closes, and Shipyard shows you every agent and the ones waiting on you.
-</Berth>
-
-<NoBerth>
-Overnight work needs the Claude Code session left open. It stops when the laptop sleeps.
-</NoBerth>
+**Name your repos.** `/setup-shipit` sets `autoMode.environment` in `~/.claude/settings.json` to the GitHub owners and repos you push to, so pushes and PRs there read as trusted. It shows a `--dry-run` first, writes only on your go, and keeps a backup. Check it with `claude auto-mode config`.

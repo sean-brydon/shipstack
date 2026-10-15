@@ -602,29 +602,57 @@ figure.shiki:has(pre > code > .line:only-child) .line {
   margin: 0;
 }
 
-.ss-page-head > p:last-child {
-  margin: 4px 0 12px;
-  font-size: 1.0625rem;
-  line-height: 1.55;
+/* ------------------------------------------------------------ tldr */
+
+.ss-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0 0 1rem;
+}
+
+.ss-badge,
+.ss-tier {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border: 1px solid var(--color-fd-border);
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.5;
   color: var(--color-fd-muted-foreground);
-  text-wrap: pretty;
-  max-width: 64ch;
+  background: var(--color-fd-card);
 }
 
-.ss-page-head[data-home] h1 {
-  font-size: clamp(2rem, 1.5rem + 1.6vw, 2.625rem);
-  letter-spacing: -0.035em;
-  font-weight: 680;
+.ss-tier[data-tier='light'] {
+  color: var(--ss-accent-text);
+  background: var(--ss-accent-soft);
+  border-color: transparent;
 }
 
-.ss-page-head[data-home] > p:last-child {
-  font-size: 1.1875rem;
-  color: var(--ss-fg-2);
+.ss-tier[data-tier='heavy'] {
+  color: var(--ss-amber);
+  border-color: currentColor;
 }
 
-/* Generated skill pages carry long descriptions; keep them a size down. */
-.ss-page-head[data-section='skills'] > p:last-child {
-  font-size: 0.975rem;
+#nd-page details.ss-full {
+  margin-top: 2rem;
+  border: 1px solid var(--color-fd-border);
+  border-radius: 12px;
+  padding: 0 16px;
+}
+
+#nd-page details.ss-full > summary {
+  cursor: pointer;
+  padding: 12px 0;
+  font-weight: 550;
+  color: var(--color-fd-foreground);
+}
+
+#nd-page details.ss-full[open] > summary {
+  border-bottom: 1px solid var(--color-fd-border);
+  margin-bottom: 4px;
 }
 
 /* ------------------------------------------------------------ callouts */

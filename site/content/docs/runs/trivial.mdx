@@ -3,7 +3,7 @@ title: A trivial fix
 description: A one-word typo in a CLI. The trivial lane makes the change, runs one check and replies in a few lines.
 ---
 
-The demo app's CLI prints "Totall" instead of "Total". This is the smallest kind of task `/shipit` gets, so it should take the [trivial lane](/how-shipit-works#the-trivial-lane): no todo list, no subagents, one check.
+**Asked:** fix "Totall" to "Total" in the demo CLI's summary. This should take the trivial lane.
 
 <Berth>
 <Run id="trivial" />
@@ -15,8 +15,6 @@ The demo app's CLI prints "Totall" instead of "Total". This is the smallest kind
 
 ## What to notice
 
-- **It took the trivial lane.** Both runs skipped the todo list, the skill files and subagents. Each finished in 3 or 4 turns, in 11 and 14 seconds, for $0.22 and $0.23.
-- **It searched before it edited.** A `grep` for "Totall" across the repo came first, so a second copy would not have been missed.
-- **It kept the columns lined up.** "Total" is one letter shorter, so it added a space after the label and showed the aligned output as its check.
-- **The plain run was more candid about its check.** Both ran the CLI and `npm test`. Only the run without berth said that none of the tests cover the CLI output, so the CLI run is the real proof.
-- **Nothing was committed.** The trivial lane commits only when you ask. berth made no difference here, because nothing showed on a page.
+- **It took the trivial lane.** No todo list, skill files or subagents: 3 or 4 turns, 11 and 14 seconds, $0.22 and $0.23.
+- **Search, then edit.** It grepped the repo for "Totall" first, then padded the shorter label so the columns stay aligned.
+- **An honest check.** Both ran the CLI and `npm test`; only the run without berth said the tests don't cover the CLI output. Nothing was committed.

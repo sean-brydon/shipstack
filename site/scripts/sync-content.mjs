@@ -111,8 +111,9 @@ function takeTitle(body) {
   return { title: m[1].trim(), body: lines.slice(i + 1).join('\n').replace(/^\n+/, '') };
 }
 
-// Rewrites links and makes the text safe for the markdown compiler: a bare
-// `<` outside code becomes `&lt;`, so `<name>` shows as typed.
+// Rewrites links and makes the text safe for the MDX compiler: a bare `<`
+// outside code becomes `&lt;` and braces are escaped, so `<name>` and
+// `{ a }` show as typed.
 function convert(body, srcRepoPath) {
   const srcDir = posix.dirname(srcRepoPath);
   const lines = body.split('\n');
@@ -128,7 +129,7 @@ function convert(body, srcRepoPath) {
         fence = f[1];
         return line;
       }
-      if (/^( {4}|\t)/.test(line) && !/^\s*([-*+]|\d+\.)\s/.test(line)) return line;
+      // MDX has no indented code blocks, so indented lines are text too.
       return convertInline(line, srcDir);
     })
     .join('\n');
@@ -168,7 +169,9 @@ function convertInline(line, srcDir) {
 
 function convertText(text, srcDir) {
   return text
-    .replace(/<(?!https?:\/\/)/g, '&lt;')
+    .replace(/<(https?:\/\/[^>\s]+)>/g, '[$1]($1)')
+    .replace(/</g, '&lt;')
+    .replace(/[{}]/g, (c) => `\\${c}`)
     .replace(/\]\(([^)\s]+)(\s+"[^"]*")?\)/g, (all, href, title = '') => {
       if (/^(https?:|mailto:|#|\/)/.test(href)) return all;
       const [path, hash] = href.split('#');
@@ -223,21 +226,54 @@ function routerEntries(text, kind, known) {
 const playbookGroups = routerEntries(section(router, 'Playbooks'), 'playbook', playbooks);
 const principleGroups = routerEntries(section(router, 'Principles'), 'principle', principles);
 
-// The README's grouping of the skills you type; the rest go under "More".
-const skillGroups = [
-  { title: 'Route and configure', items: ['shipit', 'setup-shipit', 'shipit-help'] },
-  { title: 'Understand', items: ['how', 'why', 'teach', 'recall', 'ketchup'] },
-  { title: 'Design and review', items: ['architect', 'arena', 'swarm', 'interrogate', 'blast-radius'] },
-  { title: 'Build and clean', items: ['tdd', 'benchmark-checklist', 'no-comments', 'unslop', 'technical-writing'] },
-  {
-    title: 'Improve the stack',
-    items: ['reflect', 'correct', 'automate-me', 'show-me-your-work', 'figure-it-out', 'create-verification-skill', 'maintain-verification-skill'],
-  },
-].map((g) => ({ ...g, items: g.items.filter((s) => skills.includes(s)) }));
-{
-  const grouped = new Set(skillGroups.flatMap((g) => g.items));
-  const rest = skills.filter((s) => !grouped.has(s));
-  if (rest.length) skillGroups.push({ title: 'More', items: rest });
+// ---------------------------------------------------------------- tldr
+
+// The human summary on top of each page: content/tldr.json holds the skills
+// (keyed by name) and playbooks (keyed by file slug). A principle's rule is
+// the router's one-line entry, after its "applies when" sentence.
+const tldr = JSON.parse(read(join(site, 'content', 'tldr.json')));
+for (const name of skills) if (!tldr.skills[name]) console.warn(`sync-content: no tldr for skill ${name}`);
+for (const slug of playbooks) if (!tldr.playbooks[slug]) console.warn(`sync-content: no tldr for playbook ${slug}`);
+
+// Plain text from tldr.json, safe in MDX prose.
+const mdx = (s) => s.replace(/</g, '&lt;').replace(/[{}]/g, (c) => `\\${c}`);
+const sentence = (s) => (/[.!?)"]$/.test(s) ? s : `${s}.`);
+const cell = (s) => mdx(s).replace(/\|/g, '\\|');
+
+function principleRule(desc) {
+  const m = desc.match(/^(.+?\.)\s+(.+)$/);
+  return m ? { when: m[1], rule: m[2] } : { when: '', rule: desc };
+}
+
+const collapsed = (body) =>
+  `<details className="ss-full">\n<summary>Full instructions (what the agent reads)</summary>\n\n${body.trim()}\n\n</details>\n`;
+
+const invokeLabel = { type: 'type it', auto: 'loads itself', model: 'type it or ask' };
+const tierLabel = (t) => (t === 'varies' ? 'cost varies' : `${t} cost`);
+
+function skillTldr(t) {
+  if (!t) return '';
+  const lines = [
+    `<p className="ss-badges"><span className="ss-badge">${invokeLabel[t.invoke] ?? t.invoke}</span><span className="ss-tier" data-tier="${t.tier}">${tierLabel(t.tier)}</span></p>`,
+    `**What it does.** ${mdx(t.what)}`,
+    `**Use when.** ${mdx(sentence(t.use))}`,
+  ];
+  if (t.skip) lines.push(`**Skip when.** ${mdx(sentence(t.skip))}`);
+  if (t.prompt && t.prompt !== '(automatic)') lines.push('```text\n' + t.prompt + '\n```');
+  lines.push(`**You get.** ${mdx(sentence(t.get))}`);
+  if (t.where && t.where !== 'It is the router') {
+    lines.push(
+      t.where === 'Type it'
+        ? '**In /shipit.** No playbook calls it. You type it.'
+        : `**In /shipit.** ${mdx(sentence(t.where))}`,
+    );
+  }
+  return `${lines.join('\n\n')}\n\n`;
+}
+
+function playbookTldr(t) {
+  if (!t) return '';
+  return `**What it does.** ${mdx(t.what)}\n\n**Say something like.** ${mdx(t.say)}\n\n`;
 }
 
 // ---------------------------------------------------------------- write
@@ -258,28 +294,37 @@ function writeMeta(dir, title, groups) {
   writeFileSync(join(dir, 'meta.json'), `${JSON.stringify({ title, pages }, null, 2)}\n`);
 }
 
+function table(head, rows) {
+  return `| ${head.join(' | ')} |\n|${head.map(() => '---').join('|')}|\n${rows.map((r) => `| ${r.join(' | ')} |`).join('\n')}\n`;
+}
+
 let count = 0;
 
 // Playbooks.
 {
   const dir = resetDir('playbooks');
-  const info = new Map(playbookGroups.flatMap((g) => g.items.map((i) => [i.slug, i])));
   const titles = {};
   for (const slug of playbooks) {
     const src = `skills/shipit/playbooks/${slug}.md`;
     const { title, body } = takeTitle(read(join(repo, src)));
-    titles[slug] = title ?? info.get(slug)?.name ?? slug;
-    const description = info.get(slug)?.desc;
-    writeFileSync(join(dir, `${slug}.md`), frontmatter({ title: titles[slug], description }) + convert(body, src));
+    const t = tldr.playbooks[slug];
+    titles[slug] = title ?? t?.name ?? slug;
+    writeFileSync(
+      join(dir, `${slug}.mdx`),
+      frontmatter({ title: titles[slug], description: t?.what }) + playbookTldr(t) + collapsed(convert(body, src)),
+    );
     count++;
   }
   let index =
-    'A playbook is the checklist `/shipit` follows for one kind of task. You never name it: you describe the task, and the router picks the playbook and copies its steps into the todo list. These pages are generated from `skills/shipit/playbooks/`.\n';
+    '**What it is.** The checklist `/shipit` follows for one kind of task. You describe the task; it picks the playbook and copies the steps into its todo list.\n\n**Why.** The same kind of task gets the same steps every time, and a skipped step shows as `skip: <reason>`.\n';
   for (const g of playbookGroups) {
     index += `\n## ${g.title}\n\n`;
-    for (const i of g.items) index += `- **[${titles[i.slug]}](/playbooks/${i.slug}).** ${i.desc}\n`;
+    index += table(
+      ['playbook', 'what it does'],
+      g.items.map((i) => [`[${titles[i.slug]}](/playbooks/${i.slug})`, cell(tldr.playbooks[i.slug]?.what ?? i.desc)]),
+    );
   }
-  writeFileSync(join(dir, 'index.md'), frontmatter({ title: 'Playbooks', description: `The ${playbooks.length} playbooks /shipit routes tasks to.` }) + index);
+  writeFileSync(join(dir, 'index.mdx'), frontmatter({ title: 'Playbooks', description: `The ${playbooks.length} playbooks /shipit routes tasks to.` }) + index);
   writeMeta(dir, 'Playbooks', playbookGroups);
 }
 
@@ -288,52 +333,68 @@ let count = 0;
   const dir = resetDir('principles');
   const info = new Map(principleGroups.flatMap((g) => g.items.map((i) => [i.slug, i])));
   const titles = {};
+  const rules = {};
   for (const slug of principles) {
     const src = `skills/shipit/principles/${slug}.md`;
     const { title, body } = takeTitle(read(join(repo, src)));
     titles[slug] = title ?? info.get(slug)?.name ?? slug;
-    let description = info.get(slug)?.desc;
-    if (!description) {
+    let rule = info.get(slug)?.desc ? principleRule(info.get(slug).desc).rule : '';
+    if (!rule) {
       const applies = body.match(/\*\*Applies when:\*\*\s*(.+)/);
-      description = applies ? plain(applies[1]) : undefined;
+      rule = applies ? plain(applies[1]) : '';
     }
-    writeFileSync(join(dir, `${slug}.md`), frontmatter({ title: titles[slug], description }) + convert(body, src));
+    rules[slug] = rule;
+    const head = rule ? `**The rule.** ${mdx(rule)}\n\n` : '';
+    writeFileSync(join(dir, `${slug}.mdx`), frontmatter({ title: titles[slug], description: rule }) + head + collapsed(convert(body, src)));
     count++;
   }
   let index =
-    'Principles are one-rule files the router indexes. They are not skills, so they cost no context until one applies. `/shipit` names the principle that shaped each decision, and you can steer with the names ("apply prove it works"). These pages are generated from `skills/shipit/principles/`.\n';
+    '**What it is.** One-rule files `/shipit` reads when a decision calls for one, and names in its reply.\n\n**Why.** They cost no context until one applies, and you can steer by name ("apply prove it works").\n';
   for (const g of principleGroups) {
     index += `\n## ${g.title}\n\n`;
-    for (const i of g.items) index += `- **[${titles[i.slug]}](/principles/${i.slug}).** ${i.desc}\n`;
+    index += table(['principle', 'the rule'], g.items.map((i) => [`[${titles[i.slug]}](/principles/${i.slug})`, cell(rules[i.slug])]));
   }
-  writeFileSync(join(dir, 'index.md'), frontmatter({ title: 'Principles', description: `The ${principles.length} principles /shipit applies and cites.` }) + index);
+  writeFileSync(join(dir, 'index.mdx'), frontmatter({ title: 'Principles', description: `The ${principles.length} principles /shipit applies and cites.` }) + index);
   writeMeta(dir, 'Principles', principleGroups);
 }
 
-// Skills.
+// Skills, grouped as tldr.json lists them; the rest go under "More".
 {
   const dir = resetDir('skills');
+  const skillGroups = [];
+  for (const [name, t] of Object.entries(tldr.skills)) {
+    if (!skills.includes(name)) continue;
+    let g = skillGroups.find((x) => x.title === t.group);
+    if (!g) skillGroups.push((g = { title: t.group, items: [] }));
+    g.items.push(name);
+  }
+  const rest = skills.filter((s) => !tldr.skills[s]);
+  if (rest.length) skillGroups.push({ title: 'More', items: rest });
+
   const descs = {};
   for (const name of skills) {
     const src = `skills/${name}/SKILL.md`;
     const { data, body: raw } = splitFrontmatter(read(join(repo, src)));
     const { body } = takeTitle(raw);
-    descs[name] = data.description ?? '';
-    writeFileSync(join(dir, `${name}.md`), frontmatter({ title: `/${name}`, description: data.description }) + convert(body, src));
+    const t = tldr.skills[name];
+    descs[name] = t?.what ?? plain(data.description ?? '');
+    writeFileSync(
+      join(dir, `${name}.mdx`),
+      frontmatter({ title: `/${name}`, description: descs[name] }) + skillTldr(t) + collapsed(convert(body, src)),
+    );
     count++;
   }
   let index =
-    'Every skill in the stack, one page each, generated from `skills/*/SKILL.md`. You can type any of them. Most set `disable-model-invocation`, so their descriptions stay out of your sessions\' context and `/shipit` reaches them by reading the file.\n';
+    '**What it is.** Every skill in the stack. You can type any of them; `/shipit` calls most of them for you.\n\n**Why.** Each one does one job well, so a playbook can sequence them and you can reach for one directly.\n';
   for (const g of skillGroups) {
     index += `\n## ${g.title}\n\n`;
-    for (const name of g.items) index += `- **[/${name}](/skills/${name}).** ${convertText(plain(descs[name]), 'skills')}\n`;
+    index += table(
+      ['skill', 'what it does', 'cost'],
+      g.items.map((name) => [`[/${name}](/skills/${name})`, cell(descs[name]), tldr.skills[name]?.tier ?? '']),
+    );
   }
-  writeFileSync(join(dir, 'index.md'), frontmatter({ title: 'Skills', description: `The ${skills.length} skills in the stack.` }) + index);
-  writeMeta(
-    dir,
-    'Skills',
-    skillGroups.map((g) => ({ title: g.title, items: g.items })),
-  );
+  writeFileSync(join(dir, 'index.mdx'), frontmatter({ title: 'Skills', description: `The ${skills.length} skills in the stack.` }) + index);
+  writeMeta(dir, 'Skills', skillGroups);
 }
 
 console.log(

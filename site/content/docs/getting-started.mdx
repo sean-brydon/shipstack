@@ -1,115 +1,29 @@
 ---
 title: Getting started
-description: Install the skills, pick your models, set up auto mode, and run your first task.
+description: Install the skills, pick your models, and run your first task.
 ---
 
-Setup is one script and a short conversation.
+**What it does.** Installs the skills, sets your models, and runs a first task.
 
-## Install
+**Why.** The defaults work. `/setup-shipit` only matters when you want to trade cost against quality, or let auto mode trust your repos.
 
-You need Claude Code. Optional: `gh` for the PR playbooks, `bun` for the helper scripts, `codex` as a second-vendor reviewer, and [berth](/berth) for worktree tasks, browser proof and artifacts.
+1. **Install.** Needs Claude Code; `gh`, `bun`, `codex` and [berth](/berth) are optional.
 
-```sh
-git clone https://github.com/sean-brydon/shipstack ~/shipstack
-cd ~/shipstack
-./install.sh
-```
+   ```sh
+   git clone https://github.com/sean-brydon/shipstack ~/shipstack
+   cd ~/shipstack && ./install.sh
+   ```
 
-The script links every skill into `~/.claude/skills/` and the two agents (`shipit-agent` and `comment-sicko`) into `~/.claude/agents/`. They are links, not copies, so a `git pull` in the repo applies to your next session. It never overwrites a file or folder it didn't link, and it says which ones it skipped.
+   It links the skills into `~/.claude/skills/` and two agents into `~/.claude/agents/`, so a `git pull` updates them. `--dry-run` previews; `--uninstall` removes only its links.
 
-```sh
-./install.sh --dry-run    # show what it would link
-./install.sh --uninstall  # remove only the links that point into the repo
-```
+2. **Run `/setup-shipit`** (optional). It detects `codex` and berth, asks for a budget (`unlimited`, `large` by default, `medium`, `small`), confirms the model per role, names your GitHub repos for auto mode, and writes `~/.claude/shipit/models.md`.
 
-Start a new Claude Code session after installing, so the new skills are listed.
+3. **Give it a first task, and say what done means.** The todo list opens with the matched playbook's steps.
 
-## Pick your models with /setup-shipit
+   ```text
+   /shipit add a --json flag to this command. text output stays byte-identical. verify both.
+   ```
 
-```text
-/setup-shipit
-```
+   `/shipit` applies to the message it is on. Say "stay in shipit mode for the rest of this session" to keep it on. Not sure which skill fits? Ask `/shipit-help`.
 
-It is optional. The defaults work. It walks you through these steps and writes `~/.claude/shipit/models.md`, which `/shipit` and the skills it runs read at the start of every task.
-
-<Steps>
-<Step>
-
-**Detect what you have.** It checks for `codex` on your `PATH` and for berth. It reports what it found, because that changes how panels run and how proof is captured.
-
-</Step>
-<Step>
-
-**Pick a budget.** Four options, each setting the starting `effort` for every role.
-
-| budget | starting effort |
-|---|---|
-| `unlimited` | `max` |
-| `large` (default) | `xhigh` |
-| `medium` | `high` |
-| `small` | `medium` |
-
-</Step>
-<Step>
-
-**Confirm the roles.** It shows every role with its model as a table. Accept them, or change any role to `opus`, `sonnet`, `haiku`, `fable`, `inherit`, or `codex` when it found codex. [Models and cost](/models-and-cost) lists the roles.
-
-</Step>
-<Step>
-
-**Write the file.** One line per role. A missing line means the default. Rerun `/setup-shipit` any time to change it.
-
-</Step>
-<Step>
-
-**Name your repos for auto mode.** Auto mode judges pushes and PRs against the `autoMode.environment` lines in `~/.claude/settings.json`. A bundled script scans your local checkouts for GitHub owners, asks which ones are yours, shows the old and new lines with `--dry-run`, and only writes on your go. It keeps a timestamped backup and touches only five lines.
-
-</Step>
-<Step>
-
-**Offer a verification skill.** If your project has no scripted way to drive the app, it offers once to generate one with `/create-verification-skill`. Say yes if you're new. An agent that can check its own work keeps going until the check passes.
-
-</Step>
-</Steps>
-
-## Turn on auto mode
-
-`/shipit` spawns subagents, runs checks and commits on branches. Under default permissions each of those can stop at a prompt and wait for you. Run it in Claude Code's auto permission mode, or give Claude Code an allowlist for the commands your checks run.
-
-Irreversible actions still pause for you in any mode: force-pushing a shared branch, deploying, deleting data, messaging people, publishing. [Auto mode](/auto-mode) has what it blocks and how `/shipit` behaves when a call is denied.
-
-## Run your first task
-
-Pick something real but small, and say what done means:
-
-```text
-/shipit add a --json flag to this command. text output stays byte-identical. verify both.
-```
-
-Watch the todo list. Its first items are the matched playbook's steps, the Feature playbook here. A step it skips stays in the list with `skip: <reason>`.
-
-<Berth>
-Inside berth, `/shipit` uses berth's skills for the proof: **berth-browser** drives the page on the worktree's own dev server, and the result lands in your Shipyard app through **berth-artifacts**. If the work fans out, each delegate is a berth task with its own worktree.
-</Berth>
-
-<NoBerth>
-Without berth, `/shipit` drives the page with the **claude-in-chrome** skill or the project's own Playwright, and shows results in the reply or through the `Artifact` tool. If the work fans out, each delegate is a subagent with `isolation: "worktree"`.
-</NoBerth>
-
-`/shipit` attaches to the message you send it with. To keep it applying for the whole session, say so:
-
-```text
-stay in shipit mode for the rest of this session.
-```
-
-When you can't tell which skill fits, ask:
-
-```text
-/shipit-help which skill should i use to review this branch?
-```
-
-It answers and hands you a prompt to send. It doesn't start the work itself.
-
-## Optional: enforce the proof rule
-
-A `PreToolUse` hook refuses `gh pr create` when the PR body has no `## Proof` section. [Proof](/proof#enforce-it-with-a-hook) has the settings snippet.
+**Auto mode.** Run `/shipit` in Claude Code's auto permission mode, or every check, commit and subagent can stop at a prompt. Irreversible actions still pause in any mode. See [Auto mode](/auto-mode).
